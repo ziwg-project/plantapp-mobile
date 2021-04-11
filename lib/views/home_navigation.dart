@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:plants_app/views/drawer_navigation.dart';
-import 'package:plants_app/views/plants_list_page.dart';
+import 'package:plants_app/views/plants_list/plants_list_page.dart';
 
 class HomeNavigation extends StatefulWidget {
   @override
@@ -11,7 +11,9 @@ class _HomeNavigationState extends State<HomeNavigation> {
   List<Widget> widgetList = [
     PlantsListPage(),
     Center(child: Text('Another page')),
-    Center(child: Text('Settings screen'),)
+    Center(
+      child: Text('Settings screen'),
+    )
   ];
   int currentIndex = 0;
 
