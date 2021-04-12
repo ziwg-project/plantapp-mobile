@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:plants_app/views/plant_add_edit/edit_plant_page.dart';
 import 'package:plants_app/views/plant_preview/choice_card.dart';
+import 'package:plants_app/views/delete_dialog.dart';
 import 'package:plants_app/views/plant_preview/plant_info_card.dart';
 
 class PlantPage extends StatefulWidget {
@@ -9,6 +11,15 @@ class PlantPage extends StatefulWidget {
 }
 
 class _PlantPageState extends State<PlantPage> {
+  void _askedToDelete(BuildContext context) async {
+    final result = await showDialog(
+        context: context, builder: (context) => DeleteDialog());
+    if (result != null && result) {
+      // Delete from database and return to plants list
+      Navigator.pop(context);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -19,14 +30,23 @@ class _PlantPageState extends State<PlantPage> {
               Icons.edit,
               size: 25.0,
             ),
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => EditPlantPage(),
+                ),
+              );
+            },
           ),
           IconButton(
             icon: Icon(
               Icons.delete,
               size: 25.0,
             ),
-            onPressed: () {},
+            onPressed: () {
+              _askedToDelete(context);
+            },
           ),
         ],
       ),
