@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:plants_app/views/plant_add_edit/add_plant_page.dart';
+import 'package:plants_app/views/locations_list/location_page.dart';
 import 'package:plants_app/views/plants_list/plants_list_card.dart';
 
 class PlantsListPage extends StatefulWidget {
@@ -13,17 +15,41 @@ class _PlantsListPageState extends State<PlantsListPage> {
     items.clear();
     for (int i = 0; i < 2; i++) {
       items.add(
-        ExpansionTile(
-          title: Text('Name',
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              )),
-          initiallyExpanded: true,
-          children: _buildExpandedItems(),
+        Card(
+          child: ExpansionTile(
+            title: Text(i == 0 ? 'Inside' : 'Outside',
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                )),
+            initiallyExpanded: true,
+            children: _buildSpecificLocations(),
+          ),
         ),
       );
     }
+  }
+
+  List<Widget> _buildSpecificLocations() {
+    List<Widget> list = [];
+    for (int i = 0; i < 3; i++) {
+      list.add(
+        Card(
+          child: ExpansionTile(
+            title: Text(
+              'Location',
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            initiallyExpanded: true,
+            children: _buildExpandedItems(),
+          ),
+        ),
+      );
+    }
+    return list;
   }
 
   List<Widget> _buildExpandedItems() {
@@ -45,10 +71,33 @@ class _PlantsListPageState extends State<PlantsListPage> {
         actions: [
           IconButton(
             icon: Icon(
+              Icons.edit,
+              size: 25.0,
+            ),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => LocationPage(
+                    fromList: true,
+                  ),
+                ),
+              );
+            },
+          ),
+          IconButton(
+            icon: Icon(
               Icons.add_circle_outline_rounded,
               size: 30.0,
             ),
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AddPlantPage(),
+                ),
+              );
+            },
           ),
         ],
       ),
