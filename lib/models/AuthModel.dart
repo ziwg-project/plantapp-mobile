@@ -16,6 +16,5 @@ class AuthModel extends ChangeNotifier {
       _loggedIn = false;
       notifyListeners();
     });
-
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:plants_app/models/AuthModel.dart';
 import 'package:provider/provider.dart';
+import 'package:reactive_forms/reactive_forms.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -8,66 +9,76 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final _formKey = GlobalKey<FormState>();
+  FormGroup buildForm() => fb.group(<String, dynamic>{
+        'login': ['', Validators.required],
+        'password': ['', Validators.required],
+      });
   @override
   Widget build(BuildContext context) {
     return Consumer<AuthModel>(builder: (context, auth, child) {
-      return Form(
-          key: _formKey,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 50),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                TextFormField(
-                  decoration: InputDecoration(
-                      labelText: "Login",
-                      hintText: "Username or email",
-                      suffixIcon: Icon(Icons.person)),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your username or email';
-                    }
-                    return null;
-                  },
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 25),
-                  child: TextFormField(
-                    obscureText: true,
-                    decoration: InputDecoration(
-                        labelText: "Password",
-                        hintText: "Password",
-                        suffixIcon: Icon(Icons.lock)),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter password';
-                      }
-                      return null;
+      return ReactiveFormBuilder(
+        form: buildForm,
+        builder: (context, form, child) {
+          return Padding(
+              padding: EdgeInsets.symmetric(horizontal: 40),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ReactiveTextField<String>(
+                    formControlName: 'login',
+                    validationMessages: (control) => {
+                      ValidationMessage.required: 'The login must not be empty',
                     },
+                    textInputAction: TextInputAction.next,
+                    decoration: const InputDecoration(
+                      suffixIcon: Icon(Icons.person),
+                      labelText: 'Login / email',
+                      helperText: '',
+                      helperStyle: TextStyle(height: 0.7),
+                      errorStyle: TextStyle(height: 0.7),
+                    ),
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 25),
-                  child: ElevatedButton(
+                  const SizedBox(height: 16.0),
+                  ReactiveTextField<String>(
+                    formControlName: 'password',
+                    obscureText: true,
+                    validationMessages: (control) => {
+                      ValidationMessage.required:
+                          'The password must not be empty',
+                    },
+                    textInputAction: TextInputAction.done,
+                    decoration: const InputDecoration(
+                      suffixIcon: Icon(Icons.lock),
+                      labelText: 'Password',
+                      helperText: '',
+                      helperStyle: TextStyle(height: 0.7),
+                      errorStyle: TextStyle(height: 0.7),
+                    ),
+                  ),
+                  const SizedBox(height: 16.0),
+                  ElevatedButton(
                     style: ButtonStyle(
                         padding: MaterialStateProperty.all(EdgeInsets.symmetric(
                             horizontal: 50, vertical: 15))),
                     onPressed: () {
-                      if (_formKey.currentState.validate()) {
-                        _formKey.currentState.reset();
-                        auth.logIn().then((value) =>
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                content: Text('You have been logged in'))));
+                      if (form.valid) {
+                        print(form.value);
+                        form.resetState({
+                          'email': ControlState<String>(value: null),
+                          'password': ControlState<String>(value: null),
+                        }, removeFocus: true);
+                        auth.logIn();
+                      } else {
+                        form.markAllAsTouched();
                       }
                     },
-                    child: Text('Sign in'),
-                  ),
-                ),
-              ],
-            ),
-          ));
+                    child: const Text('Sign in'),
+                  )
+                ],
+              ));
+        },
+      );
     });
   }
 }

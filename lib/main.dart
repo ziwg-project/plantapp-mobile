@@ -20,7 +20,8 @@ class MyApp extends StatelessWidget {
       ),
       // Put proper view here later
       home: Scaffold(body: Consumer<AuthModel>(builder: (context, auth, child) {
-        return Container(child: auth.loggedIn ? HomeNavigation() : GuestNavigation());
+        return Container(
+            child: auth.loggedIn ? HomeNavigation() : GuestNavigation());
       })),
     );
   }
