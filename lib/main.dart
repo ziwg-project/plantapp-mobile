@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:plants_app/models/AuthModel.dart';
+
 import 'package:plants_app/views/guest_navigation.dart';
 import 'package:provider/provider.dart';
 
