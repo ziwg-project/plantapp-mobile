@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:plants_app/views/login_page.dart';
-import 'package:plants_app/views/sign_up_page.dart';
+import 'package:plants_app/views/Guest/login_page.dart';
+
+import 'package:plants_app/views/Guest/sign_up_page.dart';
 
 class GuestNavigation extends StatefulWidget {
   @override
@@ -25,7 +26,7 @@ class _GuestNavigationState extends State<GuestNavigation> {
         items: <BottomNavigationBarItem>[
           BottomNavigationBarItem(icon: Icon(Icons.login), label: 'Login'),
           BottomNavigationBarItem(
-              icon: Icon(Icons.person_add), label: "Sign up")
+              icon: Icon(Icons.person_add), label: "Sign up"),
         ],
         currentIndex: currentIndex,
         onTap: setPage,
