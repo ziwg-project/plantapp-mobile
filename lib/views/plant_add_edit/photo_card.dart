@@ -1,28 +1,72 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 class PhotoCard extends StatefulWidget {
   // For later: have existing picture path here?
-  final bool addedPicture;
+  final String photoPath;
 
-  PhotoCard({Key key, @required this.addedPicture}) : super(key: key);
+  PhotoCard({Key key, this.photoPath}) : super(key: key);
 
   @override
-  _PhotoCardState createState() => _PhotoCardState(addedPicture);
+  _PhotoCardState createState() => _PhotoCardState(photoPath);
 }
 
 class _PhotoCardState extends State<PhotoCard> {
-  bool addedPicture;
+  final picker = ImagePicker();
+  String photoPath;
 
-  _PhotoCardState(this.addedPicture);
+  _PhotoCardState(this.photoPath);
+
+  void _showPicker(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext buildContext) {
+        return Container(
+          child: Wrap(
+            children: <Widget>[
+              ListTile(
+                leading: Icon(Icons.photo_album),
+                title: Text('From gallery'),
+                onTap: () {
+                  _getImage(true);
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.photo_camera),
+                title: Text('Take a photo'),
+                onTap: () {
+                  _getImage(false);
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _getImage(bool fromGallery) async {
+    final pickedFile = fromGallery
+        ? await picker.getImage(source: ImageSource.gallery)
+        : await picker.getImage(source: ImageSource.camera);
+
+    setState(() {
+      if (pickedFile != null) {
+        photoPath = pickedFile.path;
+      }
+    });
+  }
 
   Widget _buildImage() {
-    return addedPicture
+    return photoPath != null
         ? Container(
             decoration: BoxDecoration(
               image: DecorationImage(
-                // Change to FileImage later
-                image: NetworkImage(
-                    "https://images.bunches.co.uk/products/large/cheese-plant-1.jpg"),
+                image: FileImage(File(photoPath)),
                 fit: BoxFit.cover,
                 alignment: FractionalOffset.topCenter,
               ),
@@ -42,13 +86,7 @@ class _PhotoCardState extends State<PhotoCard> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        // Open camera
-        setState(() {
-          // Check if a photo was taken, for now pretend it was
-          // Remember photo path ?
-          // For later: plant recognition - with filling proper info in form
-          addedPicture = true;
-        });
+        _showPicker(context);
       },
       child: Container(
         height: 250,

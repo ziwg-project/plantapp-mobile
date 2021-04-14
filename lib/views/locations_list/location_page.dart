@@ -24,11 +24,13 @@ class _LocationPageState extends State<LocationPage> {
       items.add(
         Card(
           child: ExpansionTile(
-            title: Text(i == 0 ? 'Inside' : 'Outside',
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                )),
+            title: Text(
+              i == 0 ? 'Inside' : 'Outside',
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             initiallyExpanded: true,
             children: _buildExpandedItems(),
           ),
@@ -42,14 +44,10 @@ class _LocationPageState extends State<LocationPage> {
     for (int i = 0; i < 3; i++) {
       list.add(
         GestureDetector(
-          onTap: () {
-            // If fromList move to location edit
+          onTapDown: (TapDownDetails details) {
             fromList
-                ? _editLocationDialog(context)
+                ? _showPopupMenu(details.globalPosition)
                 : Navigator.pop(context, 'Chosen location');
-          },
-          onLongPress: () {
-            _askedToDelete(context);
           },
           child: Card(
             margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -62,6 +60,45 @@ class _LocationPageState extends State<LocationPage> {
       );
     }
     return list;
+  }
+
+  void _showPopupMenu(Offset offset) async {
+    await showMenu(
+      context: context,
+      position: RelativeRect.fromLTRB(offset.dx, offset.dy, 0, 0),
+      items: <PopupMenuEntry>[
+        PopupMenuItem(
+          value: 0,
+          child: Row(
+            children: <Widget>[
+              Icon(Icons.edit),
+              const SizedBox(
+                width: 5,
+              ),
+              Text('Edit'),
+            ],
+          ),
+        ),
+        PopupMenuItem(
+          value: 1,
+          child: Row(
+            children: <Widget>[
+              Icon(Icons.delete),
+              const SizedBox(
+                width: 5,
+              ),
+              Text('Delete'),
+            ],
+          ),
+        ),
+      ],
+    ).then(
+      (value) {
+        if (value != null) {
+          value == 0 ? _editLocationDialog(context) : _askedToDelete(context);
+        }
+      },
+    );
   }
 
   Widget _buildLocationRow() {
