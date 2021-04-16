@@ -10,16 +10,13 @@ class AddPlantPage extends StatefulWidget {
 class _AddPlantPageState extends State<AddPlantPage> {
   final _formKey = GlobalKey<FormState>();
   String locationText = 'Location';
-  bool addedPicture = false;
 
   Widget _buildForm() {
     return Form(
       key: _formKey,
       child: ListView(
         children: <Widget>[
-          PhotoCard(
-            addedPicture: addedPicture,
-          ),
+          PhotoCard(),
           _buildNameField(),
           _buildScientificNameField(),
           _buildLocationField(),

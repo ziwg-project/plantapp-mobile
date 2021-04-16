@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:plants_app/views/drawer_navigation.dart';
 import 'package:plants_app/views/plant_add_edit/add_plant_page.dart';
 import 'package:plants_app/views/locations_list/location_page.dart';
 import 'package:plants_app/views/plants_list/plants_list_card.dart';
@@ -101,6 +102,7 @@ class _PlantsListPageState extends State<PlantsListPage> {
           ),
         ],
       ),
+      drawer: DrawerNavigation(),
       body: Container(
         child: ListView.builder(
           itemCount: items.length,

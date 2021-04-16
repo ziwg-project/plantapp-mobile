@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:plants_app/views/drawer_navigation.dart';
 import 'package:plants_app/views/plants_list/plants_list_page.dart';
 
 class HomeNavigation extends StatefulWidget {
@@ -27,7 +26,6 @@ class _HomeNavigationState extends State<HomeNavigation> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: widgetList[currentIndex],
-      drawer: DrawerNavigation(),
       bottomNavigationBar: BottomNavigationBar(
         items: <BottomNavigationBarItem>[
           BottomNavigationBarItem(

@@ -13,7 +13,7 @@ class _EditPlantPageState extends State<EditPlantPage> {
 
   final _formKey = GlobalKey<FormState>();
   String locationText = 'Location';
-  bool addedPicture = true;
+  String photoPath;
 
   Widget _buildForm() {
     return Form(
@@ -21,7 +21,7 @@ class _EditPlantPageState extends State<EditPlantPage> {
       child: ListView(
         children: <Widget>[
           PhotoCard(
-            addedPicture: addedPicture,
+            photoPath: photoPath,
           ),
           _buildNameField(),
           _buildScientificNameField(),
