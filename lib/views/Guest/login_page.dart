@@ -37,64 +37,69 @@ class _LoginPageState extends State<LoginPage> {
             form: buildForm,
             builder: (context, form, child) {
               return Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 40),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      ReactiveTextField<String>(
-                        formControlName: 'login',
-                        validationMessages: (control) => {
-                          ValidationMessage.required:
-                              'The login must not be empty',
-                        },
-                        textInputAction: TextInputAction.next,
-                        decoration: const InputDecoration(
-                          suffixIcon: Icon(Icons.person),
-                          labelText: 'Login / email',
-                          helperText: '',
-                          helperStyle: TextStyle(height: 0.7),
-                          errorStyle: TextStyle(height: 0.7),
+                padding: EdgeInsets.symmetric(horizontal: 40),
+                child: Center(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        ReactiveTextField<String>(
+                          formControlName: 'login',
+                          validationMessages: (control) => {
+                            ValidationMessage.required:
+                                'The login must not be empty',
+                          },
+                          textInputAction: TextInputAction.next,
+                          decoration: const InputDecoration(
+                            suffixIcon: Icon(Icons.person),
+                            labelText: 'Login / email',
+                            helperText: '',
+                            helperStyle: TextStyle(height: 0.7),
+                            errorStyle: TextStyle(height: 0.7),
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 16.0),
-                      ReactiveTextField<String>(
-                        formControlName: 'password',
-                        obscureText: true,
-                        validationMessages: (control) => {
-                          ValidationMessage.required:
-                              'The password must not be empty',
-                        },
-                        textInputAction: TextInputAction.done,
-                        decoration: const InputDecoration(
-                          suffixIcon: Icon(Icons.lock),
-                          labelText: 'Password',
-                          helperText: '',
-                          helperStyle: TextStyle(height: 0.7),
-                          errorStyle: TextStyle(height: 0.7),
+                        const SizedBox(height: 16.0),
+                        ReactiveTextField<String>(
+                          formControlName: 'password',
+                          obscureText: true,
+                          validationMessages: (control) => {
+                            ValidationMessage.required:
+                                'The password must not be empty',
+                          },
+                          textInputAction: TextInputAction.done,
+                          decoration: const InputDecoration(
+                            suffixIcon: Icon(Icons.lock),
+                            labelText: 'Password',
+                            helperText: '',
+                            helperStyle: TextStyle(height: 0.7),
+                            errorStyle: TextStyle(height: 0.7),
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 16.0),
-                      ElevatedButton(
-                        style: ButtonStyle(
-                            padding: MaterialStateProperty.all(
-                                EdgeInsets.symmetric(
-                                    horizontal: 50, vertical: 15))),
-                        onPressed: () {
-                          if (form.valid) {
-                            form.resetState({
-                              'email': ControlState<String>(value: null),
-                              'password': ControlState<String>(value: null),
-                            }, removeFocus: true);
-                            auth.logIn();
-                          } else {
-                            form.markAllAsTouched();
-                          }
-                        },
-                        child: const Text('Sign in'),
-                      ),
-                    ],
-                  ));
+                        const SizedBox(height: 16.0),
+                        ElevatedButton(
+                          style: ButtonStyle(
+                              padding: MaterialStateProperty.all(
+                                  EdgeInsets.symmetric(
+                                      horizontal: 50, vertical: 15))),
+                          onPressed: () {
+                            if (form.valid) {
+                              form.resetState({
+                                'email': ControlState<String>(value: null),
+                                'password': ControlState<String>(value: null),
+                              }, removeFocus: true);
+                              auth.logIn();
+                            } else {
+                              form.markAllAsTouched();
+                            }
+                          },
+                          child: const Text('Sign in'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
             },
           );
         }));

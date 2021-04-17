@@ -88,6 +88,7 @@ class _EditPlantPageState extends State<EditPlantPage> {
             decoration: InputDecoration(
               icon: Icon(Icons.location_on),
               labelText: locationText,
+              labelStyle: TextStyle(color: Colors.black),
             ),
             enabled: false,
           ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:plants_app/views/delete_dialog.dart';
 
 class ReminderCard extends StatelessWidget {
   Widget _buildReminderInfo() {
@@ -9,6 +10,7 @@ class ReminderCard extends StatelessWidget {
           Icons.alarm,
           size: 20.0,
         ),
+        //
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.center,
@@ -36,10 +38,63 @@ class ReminderCard extends StatelessWidget {
     );
   }
 
+  void _showPopupMenu(Offset offset, BuildContext context) async {
+    await showMenu(
+      context: context,
+      position: RelativeRect.fromLTRB(offset.dx, offset.dy, 0, 0),
+      items: <PopupMenuEntry>[
+        PopupMenuItem(
+          value: 0,
+          child: Row(
+            children: <Widget>[
+              Icon(Icons.edit),
+              const SizedBox(
+                width: 5,
+              ),
+              Text('Edit'),
+            ],
+          ),
+        ),
+        PopupMenuItem(
+          value: 1,
+          child: Row(
+            children: <Widget>[
+              Icon(Icons.delete),
+              const SizedBox(
+                width: 5,
+              ),
+              Text('Delete'),
+            ],
+          ),
+        ),
+      ],
+    ).then(
+      (value) {
+        if (value != null) {
+          value == 0 ? _editReminder(context) : _askedToDelete(context);
+        }
+      },
+    );
+  }
+
+  void _askedToDelete(BuildContext context) async {
+    final result = await showDialog(
+        context: context, builder: (context) => DeleteDialog());
+    if (result != null && result) {
+      // Delete from database and refresh page
+    }
+  }
+
+  void _editReminder(BuildContext context) async {
+    // Push to edit page, get results
+  }
+
   @override
-  Widget build(BuildContext build) {
+  Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {},
+      onTapDown: (TapDownDetails details) {
+        _showPopupMenu(details.globalPosition, context);
+      },
       child: Card(
         margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         child: Padding(
