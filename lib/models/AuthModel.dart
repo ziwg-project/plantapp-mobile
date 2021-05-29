@@ -1,20 +1,30 @@
+
 import 'package:flutter/cupertino.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthModel extends ChangeNotifier {
   bool _loggedIn = false;
-
+  String _token = "";
+  AuthModel() {
+    SharedPreferences.getInstance().then((prefs) => {
+          if (prefs.containsKey("token")) {this.logIn(prefs.getString('token'))}
+        });
+  }
+  get token => _token;
   get loggedIn => _loggedIn;
-  Future<void> logIn() {
-    return Future.delayed(Duration(seconds: 0), () {
-      _loggedIn = true;
-      notifyListeners();
-    });
+  void logIn(token) async {
+    _loggedIn = true;
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString('token', token);
+    _token = token;
+    notifyListeners();
   }
 
-  Future<void> logOut() {
-    return Future.delayed(Duration(seconds: 0), () {
-      _loggedIn = false;
-      notifyListeners();
-    });
+  void logOut() async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.remove("token");
+    _loggedIn = false;
+    _token = "";
+    notifyListeners();
   }
 }

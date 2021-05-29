@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:plants_app/models/AuthModel.dart';
+import 'package:plants_app/services/authApiService.dart';
 import 'package:provider/provider.dart';
 
 import 'package:reactive_forms/reactive_forms.dart';
@@ -15,14 +16,14 @@ class _SignUpPageState extends State<SignUpPage> {
         'email': FormControl<String>(
           validators: [Validators.required, Validators.email],
         ),
-        'password': ['', Validators.required, Validators.minLength(8)],
-        'passwordConfirmation': [
+        'password1': ['', Validators.required, Validators.minLength(8)],
+        'password2': [
           '',
           Validators.required,
           Validators.minLength(8)
         ],
       }, [
-        Validators.mustMatch('password', 'passwordConfirmation')
+        Validators.mustMatch('password1', 'password2')
       ]);
   @override
   Widget build(BuildContext context) {
@@ -78,7 +79,7 @@ class _SignUpPageState extends State<SignUpPage> {
                         ),
                         const SizedBox(height: 16.0),
                         ReactiveTextField<String>(
-                          formControlName: 'password',
+                          formControlName: 'password1',
                           obscureText: true,
                           validationMessages: (control) => {
                             ValidationMessage.required:
@@ -96,7 +97,7 @@ class _SignUpPageState extends State<SignUpPage> {
                           ),
                         ),
                         ReactiveTextField<String>(
-                          formControlName: 'passwordConfirmation',
+                          formControlName: 'password2',
                           obscureText: true,
                           validationMessages: (control) => {
                             ValidationMessage.required:
@@ -123,13 +124,18 @@ class _SignUpPageState extends State<SignUpPage> {
                                       horizontal: 50, vertical: 15))),
                           onPressed: () {
                             if (form.valid) {
-                              form.resetState({
-                                'username': ControlState<String>(value: null),
-                                'email': ControlState<String>(value: null),
-                                'password': ControlState<String>(value: null),
-                                'passwordConfirmation':
-                                    ControlState<String>(value: null),
-                              }, removeFocus: true);
+                              AuthApiService.signUp(form.value, this.context)
+                                  .then((value) => {
+                                   if(value){
+                                      form.resetState({ 
+                                    'username': ControlState<String>(value: null),
+                                    'email': ControlState<String>(value: null),
+                                    'password1': ControlState<String>(value: null),
+                                    'password2':
+                                        ControlState<String>(value: null),
+                                    }, removeFocus: true),
+                                   }
+                                  });
                             } else {
                               form.markAllAsTouched();
                             }
