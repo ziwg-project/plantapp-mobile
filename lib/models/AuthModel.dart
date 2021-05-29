@@ -8,8 +8,6 @@ class AuthModel extends ChangeNotifier {
   String _token = "";
   AuthModel() {
     SharedPreferences.getInstance().then((prefs) => {
-          log("DUPA"),
-          log(prefs.getString('token')),
           if (prefs.containsKey("token")) {this.logIn(prefs.getString('token'))}
         });
   }
@@ -19,7 +17,6 @@ class AuthModel extends ChangeNotifier {
     _loggedIn = true;
     final prefs = await SharedPreferences.getInstance();
     prefs.setString('token', token);
-    log(prefs.getString('token'));
     _token = token;
     notifyListeners();
   }
