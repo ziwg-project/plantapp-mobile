@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:plants_app/views/delete_dialog.dart';
+import 'package:plants_app/views/plant_add_edit/edit_reminder_page.dart';
 
 class ReminderCard extends StatelessWidget {
   Widget _buildReminderInfo() {
@@ -10,7 +11,6 @@ class ReminderCard extends StatelessWidget {
           Icons.alarm,
           size: 20.0,
         ),
-        //
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.center,
@@ -86,7 +86,12 @@ class ReminderCard extends StatelessWidget {
   }
 
   void _editReminder(BuildContext context) async {
-    // Push to edit page, get results
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditReminderPage(),
+      ),
+    );
   }
 
   @override

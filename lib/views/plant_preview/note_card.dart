@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:plants_app/views/delete_dialog.dart';
+import 'package:plants_app/views/plant_add_edit/edit_note_page.dart';
 
 class NoteCard extends StatelessWidget {
   List<Widget> _buildNoteInfo() {
@@ -10,20 +11,6 @@ class NoteCard extends StatelessWidget {
           Icon(
             Icons.note,
             size: 20.0,
-          ),
-          SizedBox(
-            width: 10,
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Text(
-                'Note name',
-                style:
-                    const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-              ),
-            ],
           ),
         ],
       ),
@@ -85,7 +72,12 @@ class NoteCard extends StatelessWidget {
   }
 
   void _editNote(BuildContext context) async {
-    // Push to edit page, get results
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditNotePage(),
+      ),
+    );
   }
 
   @override
