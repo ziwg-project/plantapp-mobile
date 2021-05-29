@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:plants_app/models/AuthModel.dart';
+import 'package:plants_app/services/authApiService.dart';
 import 'package:plants_app/views/Guest/remind_password_page.dart';
 import 'package:provider/provider.dart';
 import 'package:reactive_forms/reactive_forms.dart';
@@ -11,7 +12,7 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   FormGroup buildForm() => fb.group(<String, dynamic>{
-        'login': ['', Validators.required],
+        'username': ['', Validators.required],
         'password': ['', Validators.required],
       });
   @override
@@ -45,7 +46,7 @@ class _LoginPageState extends State<LoginPage> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         ReactiveTextField<String>(
-                          formControlName: 'login',
+                          formControlName: 'username',
                           validationMessages: (control) => {
                             ValidationMessage.required:
                                 'The login must not be empty',
@@ -53,7 +54,7 @@ class _LoginPageState extends State<LoginPage> {
                           textInputAction: TextInputAction.next,
                           decoration: const InputDecoration(
                             suffixIcon: Icon(Icons.person),
-                            labelText: 'Login / email',
+                            labelText: 'Username',
                             helperText: '',
                             helperStyle: TextStyle(height: 0.7),
                             errorStyle: TextStyle(height: 0.7),
@@ -84,11 +85,12 @@ class _LoginPageState extends State<LoginPage> {
                                       horizontal: 50, vertical: 15))),
                           onPressed: () {
                             if (form.valid) {
+                              AuthApiService.signIn(form.value, this.context, auth);
                               form.resetState({
-                                'email': ControlState<String>(value: null),
+                                'username': ControlState<String>(value: null),
                                 'password': ControlState<String>(value: null),
                               }, removeFocus: true);
-                              auth.logIn();
+                              
                             } else {
                               form.markAllAsTouched();
                             }

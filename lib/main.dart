@@ -8,6 +8,7 @@ import 'views/home_navigation.dart';
 
 void main() {
   runApp(
+
       ChangeNotifierProvider(create: (context) => AuthModel(), child: MyApp()));
 }
 

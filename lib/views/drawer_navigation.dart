@@ -25,7 +25,10 @@ class _DrawerNavigationState extends State<DrawerNavigation> {
               title: Text('Log out'),
               trailing: Icon(Icons.logout),
               onTap: () {
-                auth.logOut().then((value) => Navigator.pop(context));
+                auth.logOut();
+                ScaffoldMessenger.of(context).showSnackBar(
+                    new SnackBar(content: new Text("You've been logged out")));
+                Navigator.pop(context);
               },
             ),
           ],
