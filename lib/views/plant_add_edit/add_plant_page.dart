@@ -9,7 +9,7 @@ class AddPlantPage extends StatefulWidget {
 
 class _AddPlantPageState extends State<AddPlantPage> {
   final _formKey = GlobalKey<FormState>();
-  String locationText = 'Location';
+  String locationText;
 
   Widget _buildForm() {
     return Form(
@@ -79,9 +79,21 @@ class _AddPlantPageState extends State<AddPlantPage> {
           child: TextFormField(
             decoration: InputDecoration(
               icon: Icon(Icons.location_on),
-              labelText: locationText,
+              labelText: locationText == null ? 'Location' : locationText,
+              labelStyle: locationText == null
+                  ? TextStyle(color: Colors.black54)
+                  : TextStyle(color: Colors.black),
+              errorStyle: TextStyle(
+                color: Theme.of(context).errorColor,
+              ),
             ),
             enabled: false,
+            validator: (value) {
+              if (locationText == null) {
+                return 'Please choose a location';
+              }
+              return null;
+            },
           ),
         ),
       ),
