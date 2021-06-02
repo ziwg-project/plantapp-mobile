@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:plants_app/models/location_model.dart';
+import 'package:plants_app/utils.dart';
 import 'package:plants_app/views/delete_dialog.dart';
 import 'package:plants_app/views/locations_list/add_location_dialog.dart';
 import 'package:plants_app/views/locations_list/edit_location_dialog.dart';
@@ -18,8 +20,12 @@ class _LocationPageState extends State<LocationPage> {
 
   _LocationPageState(this.fromList);
 
-  void _buildItems() {
-    items.clear();
+  Future<List<Widget>> _buildItems() async {
+    List<Widget> items = [];
+    String token = await getToken();
+    List<Location> locations = await fetchAllLocations(token);
+    List<List<Widget>> specificLocations =
+        await _buildSpecificLocations(locations);
     for (int i = 0; i < 2; i++) {
       items.add(
         Card(
@@ -32,37 +38,61 @@ class _LocationPageState extends State<LocationPage> {
               ),
             ),
             initiallyExpanded: true,
-            children: _buildExpandedItems(),
+            children: specificLocations[i],
           ),
         ),
       );
     }
+    return items;
   }
 
-  List<Widget> _buildExpandedItems() {
-    List<Widget> list = [];
-    for (int i = 0; i < 3; i++) {
-      list.add(
-        GestureDetector(
-          onTapDown: (TapDownDetails details) {
-            fromList
-                ? _showPopupMenu(details.globalPosition)
-                : Navigator.pop(context, 'Chosen location');
-          },
-          child: Card(
-            margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: _buildLocationRow(),
-            ),
-          ),
-        ),
-      );
+  Future<List<List<Widget>>> _buildSpecificLocations(
+      List<Location> locations) async {
+    List<Widget> inside = [];
+    List<Widget> outside = [];
+    for (int i = 0; i < locations.length; i++) {
+      locations[i].type == 'I'
+          ? inside.add(
+              GestureDetector(
+                onTapDown: (TapDownDetails details) {
+                  fromList
+                      ? _showPopupMenu(details.globalPosition, locations[i])
+                      : Navigator.pop(
+                          context, [locations[i].name, locations[i].id]);
+                },
+                child: Card(
+                  margin:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: _buildLocationRow(locations[i]),
+                  ),
+                ),
+              ),
+            )
+          : outside.add(
+              GestureDetector(
+                onTapDown: (TapDownDetails details) {
+                  fromList
+                      ? _showPopupMenu(details.globalPosition, locations[i])
+                      : Navigator.pop(
+                          context, [locations[i].name, locations[i].id]);
+                },
+                child: Card(
+                  margin:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: _buildLocationRow(locations[i]),
+                  ),
+                ),
+              ),
+            );
     }
-    return list;
+    return [inside, outside];
   }
 
-  void _showPopupMenu(Offset offset) async {
+  void _showPopupMenu(Offset offset, Location location) async {
     await showMenu(
       context: context,
       position: RelativeRect.fromLTRB(offset.dx, offset.dy, 0, 0),
@@ -95,53 +125,54 @@ class _LocationPageState extends State<LocationPage> {
     ).then(
       (value) {
         if (value != null) {
-          value == 0 ? _editLocationDialog(context) : _askedToDelete(context);
+          value == 0
+              ? _editLocationDialog(context, location)
+              : _askedToDelete(context, location);
         }
       },
     );
   }
 
-  Widget _buildLocationRow() {
+  Widget _buildLocationRow(Location location) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: <Widget>[
         Text(
-          'Location',
+          location.name,
           style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
       ],
     );
   }
 
-  void _askedToDelete(BuildContext context) async {
+  void _askedToDelete(BuildContext context, Location location) async {
     final result = await showDialog(
         context: context, builder: (context) => DeleteDialog());
     if (result != null && result) {
-      // Delete from database and refresh page
+      String token = await getToken();
+      await deleteLocation(token, location.id.toString());
+      setState(() {});
     }
   }
 
-  void _editLocationDialog(BuildContext context) async {
+  void _editLocationDialog(BuildContext context, Location location) async {
     final result = await showDialog(
       context: context,
       builder: (context) => EditLocationDialog(
-        mainLocation: 'Outside',
-        locationName: 'Some location',
+        location: location,
       ),
     );
     if (result != null) {
-      // Edit database, refresh list
+      String token = await getToken();
+      await updateLocation(token, location);
+      setState(() {});
     }
   }
 
   void _addLocationDialog(BuildContext context) async {
-    final result = await showDialog(
+    await showDialog(
         context: context, builder: (context) => AddLocationDialog());
-    if (result != null) {
-      setState(() {
-        // Rebuild list after adding a new location!
-      });
-    }
+    setState(() {});
   }
 
   @override
@@ -158,10 +189,20 @@ class _LocationPageState extends State<LocationPage> {
         },
       ),
       body: Container(
-        child: ListView.builder(
-          itemCount: items.length,
-          itemBuilder: (context, index) {
-            return items[index];
+        child: FutureBuilder<List<Widget>>(
+          future: _buildItems(),
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              return ListView.builder(
+                itemCount: snapshot.data.length,
+                itemBuilder: (context, index) {
+                  return snapshot.data[index];
+                },
+              );
+            } else if (snapshot.hasError) {
+              return Text("${snapshot.error}");
+            }
+            return Center(child: CircularProgressIndicator());
           },
         ),
       ),

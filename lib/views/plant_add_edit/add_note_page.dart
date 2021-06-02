@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:plants_app/models/note_model.dart';
+import '../../utils.dart';
 
 class AddNotePage extends StatefulWidget {
-  final String plantId;
+  final int plantId;
 
   AddNotePage({Key key, @required this.plantId}) : super(key: key);
   @override
@@ -11,7 +13,8 @@ class AddNotePage extends StatefulWidget {
 class _AddNotePageState extends State<AddNotePage> {
   final _formKey = GlobalKey<FormState>();
   String locationText;
-  String plantId;
+  int plantId;
+  String _noteText;
 
   _AddNotePageState(this.plantId);
 
@@ -33,11 +36,20 @@ class _AddNotePageState extends State<AddNotePage> {
             if (value.isEmpty) {
               return 'Please enter some words';
             }
+            _noteText = value;
             return null;
           },
         ),
       ),
     );
+  }
+
+  _sendData() async {
+    String token = await getToken();
+    Note note = new Note();
+    note.text = _noteText;
+    note.plantFk = plantId;
+    await createNote(token, note);
   }
 
   @override
@@ -52,8 +64,8 @@ class _AddNotePageState extends State<AddNotePage> {
               size: 30.0,
             ),
             onPressed: () {
-              // Save data later
               if (_formKey.currentState.validate()) {
+                _sendData();
                 Navigator.pop(context);
               }
             },

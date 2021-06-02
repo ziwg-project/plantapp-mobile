@@ -1,15 +1,30 @@
 import 'package:flutter/cupertino.dart';
 
 import 'package:flutter/material.dart';
+import 'package:plants_app/models/location_model.dart';
+import 'package:plants_app/models/plant_model.dart';
+import '../../utils.dart';
 
-class PlantInfoCard extends StatelessWidget {
-  Widget _buildPhotoCard() {
+class PlantInfoCard extends StatefulWidget {
+  final int plantId;
+
+  PlantInfoCard({Key key, @required this.plantId}) : super(key: key);
+
+  @override
+  _PlantInfoCardState createState() => _PlantInfoCardState(plantId);
+}
+
+class _PlantInfoCardState extends State<PlantInfoCard> {
+  final int plantId;
+
+  _PlantInfoCardState(this.plantId);
+
+  Widget _buildPhotoCard(String path) {
     return Expanded(
       child: Container(
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: NetworkImage(
-                "https://images.bunches.co.uk/products/large/cheese-plant-1.jpg"),
+            image: NetworkImage(path),
             fit: BoxFit.cover,
             alignment: FractionalOffset.topCenter,
           ),
@@ -20,40 +35,40 @@ class PlantInfoCard extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoRow() {
+  Widget _buildInfoRow(Plant plant, Location location) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: <Widget>[
         SizedBox(
-          width: 10,
+          height: 5,
         ),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Text(
-              'Plant name',
+              plant.name,
               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             Text(
-              'Scientific name',
+              plant.sciName == null ? '' : plant.sciName,
               style: const TextStyle(fontSize: 15),
             )
           ],
         ),
         SizedBox(
-          width: 10,
+          height: 5,
         ),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Text(
-              'General location',
+              location.type == 'I' ? 'Inside' : 'Outside',
               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             Text(
-              'Proper location',
+              location.name,
               style: const TextStyle(fontSize: 15),
             )
           ],
@@ -65,10 +80,12 @@ class PlantInfoCard extends StatelessWidget {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
+  Future<Widget> _buildWidgets() async {
+    String token = await getToken();
+    Plant plant = await fetchPlant(token, plantId.toString());
+    Location location = await fetchLocation(token, plant.locFk.toString());
     return Container(
-      height: 300,
+      height: plant.image == null ? 75 : 300,
       margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
       decoration: BoxDecoration(
           color: Colors.white,
@@ -78,14 +95,29 @@ class PlantInfoCard extends StatelessWidget {
         padding: const EdgeInsets.all(10.0),
         child: Column(
           children: [
-            _buildPhotoCard(),
+            if (plant.image != null) _buildPhotoCard(plant.image),
             SizedBox(
-              height: 10,
+              height: plant.image == null ? 5 : 10,
             ),
-            _buildInfoRow(),
+            _buildInfoRow(plant, location),
           ],
         ),
       ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<Widget>(
+      future: _buildWidgets(),
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          return snapshot.data;
+        } else if (snapshot.hasError) {
+          return Center(child: Text("${snapshot.error}"));
+        }
+        return Center(child: CircularProgressIndicator());
+      },
     );
   }
 }

@@ -2,10 +2,12 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
+import 'package:plants_app/models/reminder_model.dart';
 import 'package:plants_app/views/plant_add_edit/repeat_picker.dart';
+import '../../utils.dart';
 
 class AddReminderPage extends StatefulWidget {
-  final String plantId;
+  final int plantId;
 
   AddReminderPage({Key key, @required this.plantId}) : super(key: key);
   @override
@@ -16,11 +18,14 @@ class _AddReminderPageState extends State<AddReminderPage> {
   final _formKey = GlobalKey<FormState>();
   final dateFormat = DateFormat("dd-MM-yyyy");
   final timeFormat = DateFormat("HH:mm");
-  String plantId;
+  int plantId;
   bool repeatSwitch = true;
-  int durationIndex = 0; // Remember to add 1 when passing data to backend
-  int intervalIndex = 2;
-  List<String> intervalList = ['H', 'D', 'W', 'M'];
+  int durationIndex = 0;
+  int intervalIndex = 3;
+  DateTime date;
+  DateTime time;
+  String reminderName;
+  List<String> intervalList = ['S', 'M', 'H', 'D', 'W', 'm', 'Y'];
 
   _AddReminderPageState(this.plantId);
 
@@ -59,6 +64,7 @@ class _AddReminderPageState extends State<AddReminderPage> {
             if (value.isEmpty) {
               return 'Please enter reminder name';
             }
+            reminderName = value;
             return null;
           },
         ),
@@ -89,6 +95,7 @@ class _AddReminderPageState extends State<AddReminderPage> {
             if (value == null) {
               return 'Please choose a date';
             }
+            date = value;
             return null;
           },
         ),
@@ -120,30 +127,11 @@ class _AddReminderPageState extends State<AddReminderPage> {
             if (value == null) {
               return 'Please choose time';
             }
+            time = value;
             return null;
           },
         ),
       ),
-    );
-  }
-
-  Widget _buildRepeatField() {
-    return ListTile(
-      title: const Text('Repeat'),
-      leading: Icon(Icons.repeat),
-      trailing: CupertinoSwitch(
-        value: repeatSwitch,
-        onChanged: (bool value) {
-          setState(() {
-            repeatSwitch = value;
-          });
-        },
-      ),
-      onTap: () {
-        setState(() {
-          repeatSwitch = !repeatSwitch;
-        });
-      },
     );
   }
 
@@ -152,16 +140,30 @@ class _AddReminderPageState extends State<AddReminderPage> {
       margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       child: Column(
         children: [
-          _buildRepeatField(),
-          if (repeatSwitch)
-            RepeatPicker(
-              durationIndex: durationIndex,
-              intervalIndex: intervalIndex,
-              notifyParent: callback,
-            ),
+          ListTile(
+            title: const Text('Repeat'),
+            leading: Icon(Icons.repeat),
+          ),
+          RepeatPicker(
+            durationIndex: durationIndex,
+            intervalIndex: intervalIndex,
+            notifyParent: callback,
+          ),
         ],
       ),
     );
+  }
+
+  _sendData() async {
+    String token = await getToken();
+    Reminder reminder = new Reminder();
+    reminder.text = reminderName;
+    reminder.baseTmstp =
+        new DateTime(date.year, date.month, date.day, time.hour, time.minute);
+    reminder.intrvlNum = durationIndex + 1;
+    reminder.intrvlType = intervalList[intervalIndex];
+    reminder.plantFk = plantId;
+    await createReminder(token, reminder);
   }
 
   @override
@@ -176,8 +178,8 @@ class _AddReminderPageState extends State<AddReminderPage> {
               size: 30.0,
             ),
             onPressed: () {
-              // Save data later
               if (_formKey.currentState.validate()) {
+                _sendData();
                 Navigator.pop(context);
               }
             },

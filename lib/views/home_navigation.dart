@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:plants_app/views/locations_list/location_page.dart';
 import 'package:plants_app/views/plants_list/plants_list_page.dart';
 
 class HomeNavigation extends StatefulWidget {
@@ -9,10 +10,7 @@ class HomeNavigation extends StatefulWidget {
 class _HomeNavigationState extends State<HomeNavigation> {
   List<Widget> widgetList = [
     PlantsListPage(),
-    Center(child: Text('Another page')),
-    Center(
-      child: Text('Settings screen'),
-    )
+    LocationPage(fromList: true),
   ];
   int currentIndex = 0;
 
@@ -32,7 +30,10 @@ class _HomeNavigationState extends State<HomeNavigation> {
             icon: Icon(Icons.eco_outlined),
             label: 'Plants',
           ),
-          BottomNavigationBarItem(icon: Icon(Icons.more_vert), label: 'Other'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.location_on),
+            label: 'Locations',
+          ),
         ],
         currentIndex: currentIndex,
         onTap: setPage,

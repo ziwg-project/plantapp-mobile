@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:plants_app/models/location_model.dart';
+import 'package:plants_app/utils.dart';
 
 class AddLocationDialog extends StatefulWidget {
   @override
@@ -63,6 +65,14 @@ class _AddLocationDialogState extends State<AddLocationDialog> {
     );
   }
 
+  _sendData() async {
+    String token = await getToken();
+    Location location = new Location();
+    location.name = _locationName;
+    location.type = _mainLocation == 'Outside' ? 'O' : 'I';
+    await createLocation(token, location);
+  }
+
   Widget _buildButtons(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -76,6 +86,7 @@ class _AddLocationDialogState extends State<AddLocationDialog> {
         TextButton(
           onPressed: () {
             if (_formKey.currentState.validate()) {
+              _sendData();
               Navigator.pop(context, [_mainLocation, _locationName]);
             }
           },

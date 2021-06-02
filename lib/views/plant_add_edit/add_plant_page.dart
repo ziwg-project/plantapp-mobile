@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:plants_app/models/plant_model.dart';
 import 'package:plants_app/views/locations_list/location_page.dart';
 import 'package:plants_app/views/plant_add_edit/photo_card.dart';
+import 'package:plants_app/views/plant_add_edit/suggestion_dialog.dart';
+import '../../utils.dart';
 
 class AddPlantPage extends StatefulWidget {
   @override
@@ -10,13 +13,34 @@ class AddPlantPage extends StatefulWidget {
 class _AddPlantPageState extends State<AddPlantPage> {
   final _formKey = GlobalKey<FormState>();
   String locationText;
+  Plant plant = new Plant();
+  final nameController = TextEditingController();
+  final sciNameController = TextEditingController();
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    sciNameController.dispose();
+    super.dispose();
+  }
+
+  callback(String photoPath) async {
+    plant.image = photoPath;
+    final result = await showDialog(
+        context: context,
+        builder: (context) => SuggestionDialog(photoPath: photoPath));
+    if (result != null) {
+      if (result[0].isNotEmpty) nameController.text = result[0];
+      if (result[1].isNotEmpty) sciNameController.text = result[1];
+    }
+  }
 
   Widget _buildForm() {
     return Form(
       key: _formKey,
       child: ListView(
         children: <Widget>[
-          PhotoCard(),
+          PhotoCard(notifyParent: callback),
           _buildNameField(),
           _buildScientificNameField(),
           _buildLocationField(),
@@ -35,10 +59,12 @@ class _AddPlantPageState extends State<AddPlantPage> {
             icon: Icon(Icons.eco),
             labelText: 'Name',
           ),
+          controller: nameController,
           validator: (value) {
             if (value.isEmpty) {
               return 'Please enter plant name';
             }
+            plant.name = value;
             return null;
           },
         ),
@@ -56,9 +82,10 @@ class _AddPlantPageState extends State<AddPlantPage> {
             icon: Icon(Icons.eco_outlined),
             labelText: 'Scientific name',
           ),
+          controller: sciNameController,
           validator: (value) {
-            if (value.isEmpty) {
-              return 'Please enter plant name';
+            if (value.isNotEmpty) {
+              plant.sciName = value;
             }
             return null;
           },
@@ -109,9 +136,15 @@ class _AddPlantPageState extends State<AddPlantPage> {
                 )));
     if (result != null) {
       setState(() {
-        locationText = result;
+        locationText = result[0];
+        plant.locFk = result[1];
       });
     }
+  }
+
+  Future<void> sendData() async {
+    String token = await getToken();
+    await createPlant(token, plant);
   }
 
   @override
@@ -125,10 +158,11 @@ class _AddPlantPageState extends State<AddPlantPage> {
               Icons.add_circle_outline_rounded,
               size: 30.0,
             ),
-            onPressed: () {
-              // Save data later
+            onPressed: () async {
               if (_formKey.currentState.validate()) {
-                Navigator.pop(context);
+                await sendData().then((value) {
+                  Navigator.pop(context);
+                });
               }
             },
           ),
