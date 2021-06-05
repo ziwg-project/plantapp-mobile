@@ -4,10 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 class PhotoCard extends StatefulWidget {
-  // For later: have existing picture path here?
   final String photoPath;
+  final Function(String path) notifyParent;
 
-  PhotoCard({Key key, this.photoPath}) : super(key: key);
+  PhotoCard({Key key, this.photoPath, @required this.notifyParent})
+      : super(key: key);
 
   @override
   _PhotoCardState createState() => _PhotoCardState(photoPath);
@@ -16,6 +17,7 @@ class PhotoCard extends StatefulWidget {
 class _PhotoCardState extends State<PhotoCard> {
   final picker = ImagePicker();
   String photoPath;
+  bool addedNew = false;
 
   _PhotoCardState(this.photoPath);
 
@@ -57,6 +59,8 @@ class _PhotoCardState extends State<PhotoCard> {
     setState(() {
       if (pickedFile != null) {
         photoPath = pickedFile.path;
+        addedNew = true;
+        widget.notifyParent(photoPath);
       }
     });
   }
@@ -66,7 +70,9 @@ class _PhotoCardState extends State<PhotoCard> {
         ? Container(
             decoration: BoxDecoration(
               image: DecorationImage(
-                image: FileImage(File(photoPath)),
+                image: addedNew
+                    ? FileImage(File(photoPath))
+                    : NetworkImage(photoPath),
                 fit: BoxFit.cover,
                 alignment: FractionalOffset.topCenter,
               ),

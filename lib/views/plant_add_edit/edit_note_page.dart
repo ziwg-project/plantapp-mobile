@@ -1,12 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:plants_app/models/note_model.dart';
+import '../../utils.dart';
 
 class EditNotePage extends StatefulWidget {
+  final Note note;
+
+  EditNotePage({Key key, @required this.note}) : super(key: key);
+
   @override
-  _EditNotePageState createState() => _EditNotePageState();
+  _EditNotePageState createState() => _EditNotePageState(note);
 }
 
 class _EditNotePageState extends State<EditNotePage> {
   final _formKey = GlobalKey<FormState>();
+  Note note;
+
+  _EditNotePageState(this.note);
 
   Widget _buildField() {
     return Card(
@@ -22,17 +31,22 @@ class _EditNotePageState extends State<EditNotePage> {
             icon: Icon(Icons.eco),
             labelText: 'Note',
           ),
-          initialValue:
-              'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc vehicula felis ac magna dapibus fermentum. Nam mattis lacinia tortor, blandit finibus orci elementum eu. Nam a elit sit amet sem hendrerit blandit in id velit.',
+          initialValue: note.text,
           validator: (value) {
             if (value.isEmpty) {
               return 'Please enter some words';
             }
+            note.text = value;
             return null;
           },
         ),
       ),
     );
+  }
+
+  _sendData() async {
+    String token = await getToken();
+    await updateNote(token, note);
   }
 
   @override
@@ -47,9 +61,9 @@ class _EditNotePageState extends State<EditNotePage> {
               size: 30.0,
             ),
             onPressed: () {
-              // Save data later
               if (_formKey.currentState.validate()) {
-                Navigator.pop(context);
+                _sendData();
+                Navigator.pop(context, note);
               }
             },
           ),

@@ -1,8 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:plants_app/models/note_model.dart';
 import 'package:plants_app/views/delete_dialog.dart';
 import 'package:plants_app/views/plant_add_edit/edit_note_page.dart';
+import '../../utils.dart';
 
-class NoteCard extends StatelessWidget {
+class NoteCard extends StatefulWidget {
+  final Note note;
+  final Function() notifyParent;
+
+  NoteCard({Key key, @required this.note, @required this.notifyParent})
+      : super(key: key);
+
+  @override
+  _NoteCardState createState() => _NoteCardState(note);
+}
+
+class _NoteCardState extends State<NoteCard> {
+  Note note;
+
+  _NoteCardState(this.note);
+
   List<Widget> _buildNoteInfo() {
     return [
       Row(
@@ -17,10 +34,15 @@ class NoteCard extends StatelessWidget {
       SizedBox(
         height: 10,
       ),
-      Text(
-        'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc vehicula felis ac magna dapibus fermentum. Nam mattis lacinia tortor, blandit finibus orci elementum eu. Nam a elit sit amet sem hendrerit blandit in id velit.',
-        style: const TextStyle(fontSize: 15),
-      )
+      Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: <Widget>[
+          Text(
+            note.text,
+            style: const TextStyle(fontSize: 15),
+          )
+        ],
+      ),
     ];
   }
 
@@ -67,17 +89,21 @@ class NoteCard extends StatelessWidget {
     final result = await showDialog(
         context: context, builder: (context) => DeleteDialog());
     if (result != null && result) {
-      // Delete from database and refresh page
+      String token = await getToken();
+      await deleteNote(token, note.id.toString()).then((value) {
+        widget.notifyParent();
+      });
     }
   }
 
   void _editNote(BuildContext context) async {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => EditNotePage(),
-      ),
-    );
+    await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => EditNotePage(note: note),
+        )).then((value) {
+      widget.notifyParent();
+    });
   }
 
   @override

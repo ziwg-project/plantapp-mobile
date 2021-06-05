@@ -1,8 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:plants_app/models/reminder_model.dart';
 import 'package:plants_app/views/delete_dialog.dart';
 import 'package:plants_app/views/plant_add_edit/edit_reminder_page.dart';
+import '../../utils.dart';
 
-class ReminderCard extends StatelessWidget {
+class ReminderCard extends StatefulWidget {
+  final Reminder reminder;
+  final Function() notifyParent;
+
+  ReminderCard({Key key, @required this.reminder, @required this.notifyParent})
+      : super(key: key);
+
+  @override
+  _ReminderCardState createState() => _ReminderCardState(reminder);
+}
+
+class _ReminderCardState extends State<ReminderCard> {
+  final Reminder reminder;
+
+  _ReminderCardState(this.reminder);
+
   Widget _buildReminderInfo() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -16,26 +33,57 @@ class ReminderCard extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Text(
-              'Reminder name',
+              reminder.text,
               style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
             ),
           ],
+        ),
+        SizedBox(
+          width: 5,
         ),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Text(
-              'Next in 5 days',
+              _getReminderText(),
               style: const TextStyle(fontSize: 15),
             ),
           ],
         ),
         SizedBox(
-          height: 5,
+          width: 5,
         ),
       ],
     );
+  }
+
+  String _getReminderText() {
+    String text = 'Every ' + reminder.intrvlNum.toString();
+    switch (reminder.intrvlType) {
+      case 'S':
+        text += ' seconds';
+        break;
+      case 'M':
+        text += ' minutes';
+        break;
+      case 'H':
+        text += ' hours';
+        break;
+      case 'D':
+        text += ' days';
+        break;
+      case 'W':
+        text += ' weeks';
+        break;
+      case 'm':
+        text += ' months';
+        break;
+      case 'Y':
+        text += ' years';
+        break;
+    }
+    return text;
   }
 
   void _showPopupMenu(Offset offset, BuildContext context) async {
@@ -81,17 +129,20 @@ class ReminderCard extends StatelessWidget {
     final result = await showDialog(
         context: context, builder: (context) => DeleteDialog());
     if (result != null && result) {
-      // Delete from database and refresh page
+      String token = await getToken();
+      await deleteReminder(token, reminder.id.toString());
+      widget.notifyParent();
     }
   }
 
   void _editReminder(BuildContext context) async {
-    Navigator.push(
+    await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => EditReminderPage(),
+        builder: (context) => EditReminderPage(reminder: reminder),
       ),
     );
+    widget.notifyParent();
   }
 
   @override

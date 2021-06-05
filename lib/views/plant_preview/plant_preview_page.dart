@@ -1,27 +1,47 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:plants_app/models/plant_model.dart';
 import 'package:plants_app/views/plant_add_edit/add_note_page.dart';
 import 'package:plants_app/views/plant_add_edit/add_reminder_page.dart';
 import 'package:plants_app/views/plant_add_edit/edit_plant_page.dart';
 import 'package:plants_app/views/plant_preview/choice_card.dart';
 import 'package:plants_app/views/delete_dialog.dart';
 import 'package:plants_app/views/plant_preview/plant_info_card.dart';
+import '../../utils.dart';
 
 class PlantPage extends StatefulWidget {
+  final int plantId;
+  final Function() notifyParent;
+
+  PlantPage({Key key, @required this.plantId, @required this.notifyParent})
+      : super(key: key);
+
   @override
-  _PlantPageState createState() => _PlantPageState();
+  _PlantPageState createState() => _PlantPageState(plantId);
 }
 
 class _PlantPageState extends State<PlantPage> {
-  String plantId; // Needed for add reminder/note
+  final int plantId;
+  _PlantPageState(this.plantId);
 
   void _askedToDelete(BuildContext context) async {
     final result = await showDialog(
         context: context, builder: (context) => DeleteDialog());
     if (result != null && result) {
-      // Delete from database and return to plants list
+      String token = await getToken();
+      await deletePlant(token, plantId.toString());
+      widget.notifyParent();
       Navigator.pop(context);
     }
+  }
+
+  Future<Widget> _buildWidgets() async {
+    return Column(
+      children: <Widget>[
+        PlantInfoCard(plantId: plantId),
+        ChoiceCard(plantId: plantId),
+      ],
+    );
   }
 
   @override
@@ -38,9 +58,13 @@ class _PlantPageState extends State<PlantPage> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => EditPlantPage(),
+                  builder: (context) => EditPlantPage(
+                    plantId: plantId,
+                  ),
                 ),
-              );
+              ).then((value) {
+                setState(() {});
+              });
             },
           ),
           IconButton(
@@ -72,7 +96,9 @@ class _PlantPageState extends State<PlantPage> {
                     plantId: plantId,
                   ),
                 ),
-              );
+              ).then((value) {
+                setState(() {});
+              });
             },
           ),
           SpeedDialChild(
@@ -87,17 +113,24 @@ class _PlantPageState extends State<PlantPage> {
                     plantId: plantId,
                   ),
                 ),
-              );
+              ).then((value) {
+                setState(() {});
+              });
             },
           ),
         ],
       ),
       body: Container(
-        child: Column(
-          children: <Widget>[
-            PlantInfoCard(),
-            ChoiceCard(),
-          ],
+        child: FutureBuilder<Widget>(
+          future: _buildWidgets(),
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              return snapshot.data;
+            } else if (snapshot.hasError) {
+              return Center(child: Text("${snapshot.error}"));
+            }
+            return Center(child: CircularProgressIndicator());
+          },
         ),
       ),
     );

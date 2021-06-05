@@ -1,15 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:plants_app/models/note_model.dart';
+import 'package:plants_app/models/reminder_model.dart';
 import 'package:plants_app/views/plant_preview/note_card.dart';
 import 'package:plants_app/views/plant_preview/reminder_card.dart';
+import '../../utils.dart';
 
 class ChoiceCard extends StatefulWidget {
+  final int plantId;
+
+  ChoiceCard({Key key, @required this.plantId}) : super(key: key);
+
   @override
-  _ChoiceCardState createState() => _ChoiceCardState();
+  _ChoiceCardState createState() => _ChoiceCardState(plantId);
 }
 
 class _ChoiceCardState extends State<ChoiceCard> {
+  final int plantId;
   int widgetChoice = 0;
   List<Widget> items = [];
+
+  _ChoiceCardState(this.plantId);
 
   Widget _buildChoiceRow() {
     return Container(
@@ -57,8 +67,8 @@ class _ChoiceCardState extends State<ChoiceCard> {
     );
   }
 
-  Widget _buildList() {
-    _buildChosenList();
+  Future<Widget> _buildList() async {
+    List<Widget> items = await _buildChosenList();
     return Expanded(
       child: ListView.builder(
         itemCount: items.length,
@@ -69,11 +79,33 @@ class _ChoiceCardState extends State<ChoiceCard> {
     );
   }
 
-  void _buildChosenList() {
-    items.clear();
-    for (int i = 0; i < 5; i++) {
-      items.add(widgetChoice == 0 ? ReminderCard() : NoteCard());
+  callback() {
+    setState(() {});
+  }
+
+  Future<List<Widget>> _buildChosenList() async {
+    String token = await getToken();
+    List<Widget> items = [];
+    if (widgetChoice == 0) {
+      List<Reminder> reminders = await fetchAllReminders(token);
+      reminders.forEach((reminder) {
+        if (reminder.plantFk == plantId)
+          items.add(ReminderCard(
+            reminder: reminder,
+            notifyParent: callback,
+          ));
+      });
+    } else {
+      List<Note> notes = await fetchAllNotes(token);
+      notes.forEach((note) {
+        if (note.plantFk == plantId)
+          items.add(NoteCard(
+            note: note,
+            notifyParent: callback,
+          ));
+      });
     }
+    return items;
   }
 
   @override
@@ -90,7 +122,17 @@ class _ChoiceCardState extends State<ChoiceCard> {
           child: Column(
             children: [
               _buildChoiceRow(),
-              _buildList(),
+              FutureBuilder<Widget>(
+                future: _buildList(),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    return snapshot.data;
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text("${snapshot.error}"));
+                  }
+                  return Center(child: CircularProgressIndicator());
+                },
+              ),
             ],
           ),
         ),

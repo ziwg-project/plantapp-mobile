@@ -18,7 +18,15 @@ class RepeatPicker extends StatefulWidget {
 }
 
 class _RepeatPickerState extends State<RepeatPicker> {
-  final List<String> pickerList = ['Hours', 'Days', 'Weeks', 'Months'];
+  final List<String> pickerList = [
+    'Seconds',
+    'Minutes',
+    'Hours',
+    'Days',
+    'Weeks',
+    'Months',
+    'Years'
+  ];
   int durationIndex;
   int intervalIndex;
   String repeatText;
@@ -116,8 +124,6 @@ class _RepeatPickerState extends State<RepeatPicker> {
     return list;
   }
 
-  String currentTimeInHour = '';
-  String currentTimeInMin = '';
   @override
   Widget build(BuildContext context) {
     return Padding(

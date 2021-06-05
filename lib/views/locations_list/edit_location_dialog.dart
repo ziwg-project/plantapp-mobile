@@ -1,24 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:plants_app/models/location_model.dart';
 
 class EditLocationDialog extends StatefulWidget {
-  final String mainLocation;
-  final String locationName;
+  final Location location;
 
-  EditLocationDialog(
-      {Key key, @required this.mainLocation, @required this.locationName})
-      : super(key: key);
+  EditLocationDialog({Key key, @required this.location}) : super(key: key);
 
   @override
-  _EditLocationDialogState createState() =>
-      _EditLocationDialogState(mainLocation, locationName);
+  _EditLocationDialogState createState() => _EditLocationDialogState(location);
 }
 
 class _EditLocationDialogState extends State<EditLocationDialog> {
   final _formKey = GlobalKey<FormState>();
-  String _mainLocation;
-  String _locationName;
+  final Location location;
 
-  _EditLocationDialogState(this._mainLocation, this._locationName);
+  _EditLocationDialogState(this.location);
 
   Widget _buildDropdown() {
     return Card(
@@ -27,10 +23,10 @@ class _EditLocationDialogState extends State<EditLocationDialog> {
         padding: const EdgeInsets.all(20.0),
         child: DropdownButtonFormField(
           hint: Text("Choose main location"),
-          value: _mainLocation,
+          value: location.type == 'I' ? 'Inside' : 'Outside',
           onChanged: (String value) {
             setState(() {
-              _mainLocation = value;
+              location.type = value == 'Inside' ? 'I' : 'O';
             });
           },
           items: <String>['Inside', 'Outside'].map((String value) {
@@ -39,12 +35,6 @@ class _EditLocationDialogState extends State<EditLocationDialog> {
               child: Text(value),
             );
           }).toList(),
-          validator: (_mainLocation) {
-            if (_mainLocation == null) {
-              return 'Please choose a main location';
-            }
-            return null;
-          },
         ),
       ),
     );
@@ -59,7 +49,7 @@ class _EditLocationDialogState extends State<EditLocationDialog> {
           decoration: InputDecoration(
             labelText: 'Name',
           ),
-          initialValue: _locationName,
+          initialValue: location.name,
           validator: (value) {
             if (value.isEmpty) {
               return 'Please enter location name';
@@ -67,7 +57,7 @@ class _EditLocationDialogState extends State<EditLocationDialog> {
             return null;
           },
           onChanged: (String value) {
-            _locationName = value;
+            location.name = value;
           },
         ),
       ),
@@ -87,7 +77,7 @@ class _EditLocationDialogState extends State<EditLocationDialog> {
         TextButton(
           onPressed: () {
             if (_formKey.currentState.validate()) {
-              Navigator.pop(context, [_mainLocation, _locationName]);
+              Navigator.pop(context, location);
             }
           },
           child: Text('Save'),
