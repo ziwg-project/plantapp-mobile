@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:plants_app/models/location_model.dart';
 import 'package:plants_app/models/plant_model.dart';
@@ -5,6 +6,8 @@ import 'package:plants_app/utils.dart';
 import 'package:plants_app/views/drawer_navigation.dart';
 import 'package:plants_app/views/plant_add_edit/add_plant_page.dart';
 import 'package:plants_app/views/plants_list/plants_list_card.dart';
+import 'package:reactive_forms/reactive_forms.dart';
+import 'dart:async';
 
 class PlantsListPage extends StatefulWidget {
   @override
@@ -12,8 +15,24 @@ class PlantsListPage extends StatefulWidget {
 }
 
 class _PlantsListPageState extends State<PlantsListPage> {
-  Future<List<List<Widget>>> _buildSpecificLocations(
-      List<Location> locations, List<Plant> plants) async {
+  List<Plant> plants = [];
+
+  @override
+  void initState() {
+    super.initState();
+    getToken().then((value) => {
+          fetchAllPlants(value, query: '').then((response) => this.setState(() {
+                plants = response;
+              }))
+        });
+  }
+
+  final searchForm = FormGroup({
+    'name': FormControl<String>(value: ''),
+  });
+
+  List<List<Widget>> _buildSpecificLocations(
+      List<Location> locations, List<Plant> plants) {
     List<Widget> inside = [];
     List<Widget> outside = [];
     for (int i = 0; i < locations.length; i++) {
@@ -60,6 +79,15 @@ class _PlantsListPageState extends State<PlantsListPage> {
     setState(() {});
   }
 
+  onSearchSubmit() async {
+    String token = await getToken();
+    var response = await fetchAllPlants(token,
+        query: this.searchForm.control('name').value);
+    this.setState(() {
+      plants = response;
+    });
+  }
+
   List<Widget> _buildExpandedItems(List<Plant> plants) {
     List<Widget> list = [];
     for (int i = 0; i < plants.length; i++) {
@@ -74,9 +102,30 @@ class _PlantsListPageState extends State<PlantsListPage> {
     String token = await getToken();
     List<Widget> items = [];
     List<Location> locations = await fetchAllLocations(token);
-    List<Plant> plants = await fetchAllPlants(token);
     List<List<Widget>> specificLocations =
-        await _buildSpecificLocations(locations, plants);
+        _buildSpecificLocations(locations, this.plants);
+    items.add(ReactiveForm(
+        formGroup: this.searchForm,
+        child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 5),
+            child: Center(
+                child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                ReactiveForm(
+                    formGroup: this.searchForm,
+                    child: ReactiveTextField<String>(
+                        formControlName: 'name',
+                        onSubmitted: onSearchSubmit,
+                        decoration: const InputDecoration(
+                          suffixIcon: Icon(Icons.search),
+                          labelText: 'Plant name',
+                          helperStyle: TextStyle(height: 0.7),
+                          errorStyle: TextStyle(height: 0.7),
+                        ))),
+                const SizedBox(height: 20.0),
+              ],
+            )))));
     for (int i = 0; i < 2; i++) {
       items.add(
         Card(

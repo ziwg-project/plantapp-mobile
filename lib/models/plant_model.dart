@@ -60,9 +60,10 @@ Future<Plant> fetchPlant(String token, String id) async {
   }
 }
 
-Future<List<Plant>> fetchAllPlants(String token) async {
+Future<List<Plant>> fetchAllPlants(String token, {String query = ""}) async {
+  var queryParameters = {'search': query};
   final response = await http.get(
-    Uri.parse('https://plantapp.irezwi.pl/api/plant/'),
+    Uri.https('plantapp.irezwi.pl', '/api/plant/', queryParameters),
     headers: <String, String>{
       HttpHeaders.authorizationHeader: 'Token ' + token,
     },
