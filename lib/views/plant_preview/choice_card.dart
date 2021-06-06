@@ -18,8 +18,23 @@ class _ChoiceCardState extends State<ChoiceCard> {
   final int plantId;
   int widgetChoice = 0;
   List<Widget> items = [];
+  Future<Widget> _futureWidget;
 
   _ChoiceCardState(this.plantId);
+
+  @override
+  void initState() {
+    super.initState();
+    _futureWidget = _buildList();
+  }
+
+  @override
+  void didUpdateWidget(ChoiceCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    setState(() {
+      _futureWidget = _buildList();
+    });
+  }
 
   Widget _buildChoiceRow() {
     return Container(
@@ -53,6 +68,7 @@ class _ChoiceCardState extends State<ChoiceCard> {
       onPressed: () {
         setState(() {
           widgetChoice = choice;
+          _futureWidget = _buildList();
         });
       },
       child: choice == 0 ? Text('Reminders') : Text('Notes'),
@@ -80,7 +96,9 @@ class _ChoiceCardState extends State<ChoiceCard> {
   }
 
   callback() {
-    setState(() {});
+    setState(() {
+      _futureWidget = _buildList();
+    });
   }
 
   Future<List<Widget>> _buildChosenList() async {
@@ -93,6 +111,7 @@ class _ChoiceCardState extends State<ChoiceCard> {
           items.add(ReminderCard(
             reminder: reminder,
             notifyParent: callback,
+            key: UniqueKey(),
           ));
       });
     } else {
@@ -102,6 +121,7 @@ class _ChoiceCardState extends State<ChoiceCard> {
           items.add(NoteCard(
             note: note,
             notifyParent: callback,
+            key: UniqueKey(),
           ));
       });
     }
@@ -123,7 +143,7 @@ class _ChoiceCardState extends State<ChoiceCard> {
             children: [
               _buildChoiceRow(),
               FutureBuilder<Widget>(
-                future: _buildList(),
+                future: _futureWidget,
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
                     return snapshot.data;

@@ -16,23 +16,24 @@ class PlantsListPage extends StatefulWidget {
 
 class _PlantsListPageState extends State<PlantsListPage> {
   List<Plant> plants = [];
+  Future<List<Widget>> _futureWidgets;
 
   @override
   void initState() {
     super.initState();
     getToken().then((value) => {
-          fetchAllPlants(value, query: '').then((response) => this.setState(() {
-                plants = response;
-              }))
+          fetchAllPlants(value, query: '').then((response) {
+            plants = response;
+          })
         });
+    _futureWidgets = _buildWidgets();
   }
 
   final searchForm = FormGroup({
     'name': FormControl<String>(value: ''),
   });
 
-  List<List<Widget>> _buildSpecificLocations(
-      List<Location> locations, List<Plant> plants) {
+  List<List<Widget>> _buildSpecificLocations(List<Location> locations) {
     List<Widget> inside = [];
     List<Widget> outside = [];
     for (int i = 0; i < locations.length; i++) {
@@ -75,8 +76,30 @@ class _PlantsListPageState extends State<PlantsListPage> {
     return [inside, outside];
   }
 
+  @override
+  void didUpdateWidget(PlantsListPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    setState(() {
+      getToken().then((value) => {
+            fetchAllPlants(value, query: '').then((response) {
+              plants = response;
+            })
+          });
+      searchForm.control('name').value = '';
+      _futureWidgets = _buildWidgets();
+    });
+  }
+
   callback() {
-    setState(() {});
+    setState(() {
+      searchForm.control('name').value = '';
+      getToken().then((value) => {
+            fetchAllPlants(value, query: '').then((response) {
+              plants = response;
+            })
+          });
+      _futureWidgets = _buildWidgets();
+    });
   }
 
   onSearchSubmit() async {
@@ -85,14 +108,16 @@ class _PlantsListPageState extends State<PlantsListPage> {
         query: this.searchForm.control('name').value);
     this.setState(() {
       plants = response;
+      _futureWidgets = _buildWidgets();
     });
   }
 
-  List<Widget> _buildExpandedItems(List<Plant> plants) {
+  List<Widget> _buildExpandedItems(List<Plant> selectedPlants) {
     List<Widget> list = [];
-    for (int i = 0; i < plants.length; i++) {
+    for (int i = 0; i < selectedPlants.length; i++) {
       list.add(
-        PlantsListCard(plant: plants[i], notifyParent: callback),
+        PlantsListCard(
+            plant: selectedPlants[i], notifyParent: callback, key: UniqueKey()),
       );
     }
     return list;
@@ -102,8 +127,11 @@ class _PlantsListPageState extends State<PlantsListPage> {
     String token = await getToken();
     List<Widget> items = [];
     List<Location> locations = await fetchAllLocations(token);
-    List<List<Widget>> specificLocations =
-        _buildSpecificLocations(locations, this.plants);
+    if (plants.isEmpty) {
+      plants = await fetchAllPlants(token,
+          query: this.searchForm.control('name').value);
+    }
+    List<List<Widget>> specificLocations = _buildSpecificLocations(locations);
     items.add(ReactiveForm(
         formGroup: this.searchForm,
         child: Padding(
@@ -159,10 +187,17 @@ class _PlantsListPageState extends State<PlantsListPage> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => AddPlantPage(),
+                  builder: (context) => AddPlantPage(notifyParent: callback),
                 ),
               ).then((value) {
-                setState(() {});
+                setState(() {
+                  getToken().then((value) => {
+                        fetchAllPlants(value, query: '').then((response) {
+                          plants = response;
+                        })
+                      });
+                  _futureWidgets = _buildWidgets();
+                });
               });
             },
           ),
@@ -171,7 +206,7 @@ class _PlantsListPageState extends State<PlantsListPage> {
       drawer: DrawerNavigation(),
       body: Container(
         child: FutureBuilder<List<Widget>>(
-          future: _buildWidgets(),
+          future: _futureWidgets,
           builder: (context, snapshot) {
             if (snapshot.hasData) {
               return ListView.builder(

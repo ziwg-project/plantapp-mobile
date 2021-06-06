@@ -1,11 +1,19 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:plants_app/models/note_model.dart';
 import 'package:plants_app/models/plant_model.dart';
+import 'package:plants_app/models/suggestion_model.dart';
 import 'package:plants_app/views/locations_list/location_page.dart';
 import 'package:plants_app/views/plant_add_edit/photo_card.dart';
 import 'package:plants_app/views/plant_add_edit/suggestion_dialog.dart';
 import '../../utils.dart';
 
 class AddPlantPage extends StatefulWidget {
+  final Function() notifyParent;
+
+  AddPlantPage({Key key, @required this.notifyParent}) : super(key: key);
+
   @override
   _AddPlantPageState createState() => _AddPlantPageState();
 }
@@ -16,6 +24,7 @@ class _AddPlantPageState extends State<AddPlantPage> {
   Plant plant = new Plant();
   final nameController = TextEditingController();
   final sciNameController = TextEditingController();
+  Suggestion suggestion;
 
   @override
   void dispose() {
@@ -30,8 +39,11 @@ class _AddPlantPageState extends State<AddPlantPage> {
         context: context,
         builder: (context) => SuggestionDialog(photoPath: photoPath));
     if (result != null) {
-      if (result[0].isNotEmpty) nameController.text = result[0];
-      if (result[1].isNotEmpty) sciNameController.text = result[1];
+      suggestion = result;
+      if (suggestion.plantName.isNotEmpty)
+        nameController.text = suggestion.plantName;
+      if (suggestion.scientificName != null)
+        sciNameController.text = suggestion.scientificName;
     }
   }
 
@@ -144,7 +156,32 @@ class _AddPlantPageState extends State<AddPlantPage> {
 
   Future<void> sendData() async {
     String token = await getToken();
-    await createPlant(token, plant);
+    final response = await createPlant(token, plant);
+    if (response.statusCode == 201 && suggestion != null) {
+      final responseString = await response.stream.bytesToString();
+      plant = Plant.fromJson(jsonDecode(responseString));
+      if (plant.id != null) {
+        Note note = new Note();
+        note.plantFk = plant.id;
+        if (suggestion.commonNames != null) {
+          note.text = 'Common names: ' + suggestion.commonNames.join(', ');
+          await createNote(token, note);
+        }
+        if (suggestion.wikiDescription != null) {
+          note.text = suggestion.wikiDescription;
+          await createNote(token, note);
+        }
+        if (suggestion.edibleParts != null) {
+          note.text = 'Edible parts: ' + suggestion.edibleParts.join(', ');
+          await createNote(token, note);
+        }
+        if (suggestion.propagationMethods != null) {
+          note.text = 'Propagation methods: ' +
+              suggestion.propagationMethods.join(', ');
+          await createNote(token, note);
+        }
+      }
+    }
   }
 
   @override
@@ -161,6 +198,7 @@ class _AddPlantPageState extends State<AddPlantPage> {
             onPressed: () async {
               if (_formKey.currentState.validate()) {
                 await sendData().then((value) {
+                  widget.notifyParent();
                   Navigator.pop(context);
                 });
               }

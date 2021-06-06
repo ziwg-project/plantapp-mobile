@@ -22,24 +22,32 @@ class PlantPage extends StatefulWidget {
 
 class _PlantPageState extends State<PlantPage> {
   final int plantId;
+  Future<Widget> _futureWidget;
   _PlantPageState(this.plantId);
+
+  @override
+  void initState() {
+    super.initState();
+    _futureWidget = _buildWidgets();
+  }
 
   void _askedToDelete(BuildContext context) async {
     final result = await showDialog(
         context: context, builder: (context) => DeleteDialog());
     if (result != null && result) {
       String token = await getToken();
-      await deletePlant(token, plantId.toString());
-      widget.notifyParent();
-      Navigator.pop(context);
+      await deletePlant(token, plantId.toString()).then((value) {
+        widget.notifyParent();
+        Navigator.pop(context, true);
+      });
     }
   }
 
   Future<Widget> _buildWidgets() async {
     return Column(
       children: <Widget>[
-        PlantInfoCard(plantId: plantId),
-        ChoiceCard(plantId: plantId),
+        PlantInfoCard(plantId: plantId, key: UniqueKey()),
+        ChoiceCard(plantId: plantId, key: UniqueKey()),
       ],
     );
   }
@@ -63,7 +71,9 @@ class _PlantPageState extends State<PlantPage> {
                   ),
                 ),
               ).then((value) {
-                setState(() {});
+                setState(() {
+                  _futureWidget = _buildWidgets();
+                });
               });
             },
           ),
@@ -97,7 +107,9 @@ class _PlantPageState extends State<PlantPage> {
                   ),
                 ),
               ).then((value) {
-                setState(() {});
+                setState(() {
+                  _futureWidget = _buildWidgets();
+                });
               });
             },
           ),
@@ -114,7 +126,9 @@ class _PlantPageState extends State<PlantPage> {
                   ),
                 ),
               ).then((value) {
-                setState(() {});
+                setState(() {
+                  _futureWidget = _buildWidgets();
+                });
               });
             },
           ),
@@ -122,7 +136,7 @@ class _PlantPageState extends State<PlantPage> {
       ),
       body: Container(
         child: FutureBuilder<Widget>(
-          future: _buildWidgets(),
+          future: _futureWidget,
           builder: (context, snapshot) {
             if (snapshot.hasData) {
               return snapshot.data;
