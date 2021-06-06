@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:plants_app/models/suggestion_model.dart';
+import 'package:plants_app/utils.dart';
 
 class SuggestionDialog extends StatefulWidget {
   final String photoPath;
@@ -12,13 +13,19 @@ class SuggestionDialog extends StatefulWidget {
 
 class _SuggestionDialogState extends State<SuggestionDialog> {
   String photoPath;
+  Future<Widget> _futureWidget;
   _SuggestionDialogState(this.photoPath);
+
+  @override
+  void initState() {
+    super.initState();
+    _futureWidget = _buildList();
+  }
 
   Widget _buildItem(Suggestion suggestion) {
     return GestureDetector(
       onTap: () {
-        Navigator.pop(
-            context, [suggestion.plantName, suggestion.scientificName]);
+        Navigator.pop(context, suggestion);
       },
       child: Card(
         margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -35,17 +42,34 @@ class _SuggestionDialogState extends State<SuggestionDialog> {
                     suggestion.plantName == null ? '' : suggestion.plantName,
                     style: const TextStyle(
                         fontSize: 20, fontWeight: FontWeight.bold),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                   ),
                   Text(
                     suggestion.scientificName == null
                         ? ''
                         : suggestion.scientificName,
                     style: const TextStyle(fontSize: 15),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                   )
                 ],
               ),
               SizedBox(
                 width: 5,
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Text(
+                    suggestion.probability == null
+                        ? ''
+                        : suggestion.probability,
+                    style: const TextStyle(
+                        fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                ],
               ),
             ],
           ),
@@ -55,7 +79,8 @@ class _SuggestionDialogState extends State<SuggestionDialog> {
   }
 
   Future<Widget> _buildList() async {
-    List<Suggestion> suggestions = await fetchSuggestions(photoPath);
+    String token = await getToken();
+    List<Suggestion> suggestions = await fetchSuggestions(photoPath, token);
     if (suggestions.isNotEmpty) {
       return ListView.builder(
         shrinkWrap: true,
@@ -88,7 +113,7 @@ class _SuggestionDialogState extends State<SuggestionDialog> {
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
         FutureBuilder<Widget>(
-          future: _buildList(),
+          future: _futureWidget,
           builder: (context, snapshot) {
             if (snapshot.hasData) {
               return snapshot.data;

@@ -27,7 +27,7 @@ class _AddNotePageState extends State<AddNotePage> {
           keyboardType: TextInputType.multiline,
           maxLines: 20,
           minLines: 1,
-          maxLength: 500,
+          maxLength: 1000,
           decoration: InputDecoration(
             icon: Icon(Icons.eco),
             labelText: 'Note',

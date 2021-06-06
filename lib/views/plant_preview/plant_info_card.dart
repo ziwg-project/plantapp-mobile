@@ -16,8 +16,23 @@ class PlantInfoCard extends StatefulWidget {
 
 class _PlantInfoCardState extends State<PlantInfoCard> {
   final int plantId;
+  Future<Widget> _futureWidget;
 
   _PlantInfoCardState(this.plantId);
+
+  @override
+  void initState() {
+    super.initState();
+    _futureWidget = _buildWidgets();
+  }
+
+  @override
+  void didUpdateWidget(PlantInfoCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    setState(() {
+      _futureWidget = _buildWidgets();
+    });
+  }
 
   Widget _buildPhotoCard(String path) {
     return Expanded(
@@ -109,7 +124,7 @@ class _PlantInfoCardState extends State<PlantInfoCard> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<Widget>(
-      future: _buildWidgets(),
+      future: _futureWidget,
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           return snapshot.data;

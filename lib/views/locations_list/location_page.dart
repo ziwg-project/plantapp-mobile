@@ -17,8 +17,15 @@ class LocationPage extends StatefulWidget {
 class _LocationPageState extends State<LocationPage> {
   bool fromList;
   List<Widget> items = [];
+  Future<List<Widget>> _futureWidgets;
 
   _LocationPageState(this.fromList);
+
+  @override
+  void initState() {
+    super.initState();
+    _futureWidgets = _buildItems();
+  }
 
   Future<List<Widget>> _buildItems() async {
     List<Widget> items = [];
@@ -150,8 +157,11 @@ class _LocationPageState extends State<LocationPage> {
         context: context, builder: (context) => DeleteDialog());
     if (result != null && result) {
       String token = await getToken();
-      await deleteLocation(token, location.id.toString());
-      setState(() {});
+      await deleteLocation(token, location.id.toString()).then((value) {
+        setState(() {
+          _futureWidgets = _buildItems();
+        });
+      });
     }
   }
 
@@ -164,20 +174,26 @@ class _LocationPageState extends State<LocationPage> {
     );
     if (result != null) {
       String token = await getToken();
-      await updateLocation(token, location);
-      setState(() {});
+      await updateLocation(token, location).then((value) {
+        setState(() {
+          _futureWidgets = _buildItems();
+        });
+      });
     }
   }
 
   void _addLocationDialog(BuildContext context) async {
     await showDialog(
-        context: context, builder: (context) => AddLocationDialog());
-    setState(() {});
+        context: context,
+        builder: (context) => AddLocationDialog()).then((value) {
+      setState(() {
+        _futureWidgets = _buildItems();
+      });
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    _buildItems();
     return Scaffold(
       appBar: AppBar(
         title: Text(fromList ? 'Locations' : 'Choose location'),
@@ -190,7 +206,7 @@ class _LocationPageState extends State<LocationPage> {
       ),
       body: Container(
         child: FutureBuilder<List<Widget>>(
-          future: _buildItems(),
+          future: _futureWidgets,
           builder: (context, snapshot) {
             if (snapshot.hasData) {
               return ListView.builder(

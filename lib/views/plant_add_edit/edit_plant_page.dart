@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:plants_app/models/location_model.dart';
+import 'package:plants_app/models/note_model.dart';
 import 'package:plants_app/models/plant_model.dart';
+import 'package:plants_app/models/suggestion_model.dart';
 import 'package:plants_app/views/locations_list/location_page.dart';
 import 'package:plants_app/views/plant_add_edit/photo_card.dart';
 import 'package:plants_app/views/plant_add_edit/suggestion_dialog.dart';
@@ -24,7 +26,15 @@ class _EditPlantPageState extends State<EditPlantPage> {
   bool initialising = true;
   bool changingPhoto = false;
   Plant plant;
+  Suggestion suggestion;
+  Future<Widget> _futureWidget;
   _EditPlantPageState(this.plantId);
+
+  @override
+  void initState() {
+    super.initState();
+    _futureWidget = _buildForm();
+  }
 
   @override
   void dispose() {
@@ -40,8 +50,11 @@ class _EditPlantPageState extends State<EditPlantPage> {
         context: context,
         builder: (context) => SuggestionDialog(photoPath: photoPath));
     if (result != null) {
-      if (result[0].isNotEmpty) nameController.text = result[0];
-      if (result[1].isNotEmpty) sciNameController.text = result[1];
+      suggestion = result;
+      if (suggestion.plantName.isNotEmpty)
+        nameController.text = suggestion.plantName;
+      if (suggestion.scientificName != null)
+        sciNameController.text = suggestion.scientificName;
     }
   }
 
@@ -146,6 +159,7 @@ class _EditPlantPageState extends State<EditPlantPage> {
       setState(() {
         locationText = result[0];
         plant.locFk = result[1];
+        _futureWidget = _buildForm();
       });
     }
   }
@@ -153,6 +167,27 @@ class _EditPlantPageState extends State<EditPlantPage> {
   Future<void> sendData() async {
     String token = await getToken();
     await updatePlant(token, plant, changingPhoto);
+    if (suggestion != null) {
+      Note note = new Note();
+      note.plantFk = plant.id;
+      if (suggestion.commonNames != null) {
+        note.text = 'Common names: ' + suggestion.commonNames.join(', ');
+        await createNote(token, note);
+      }
+      if (suggestion.wikiDescription != null) {
+        note.text = suggestion.wikiDescription;
+        await createNote(token, note);
+      }
+      if (suggestion.edibleParts != null) {
+        note.text = 'Edible parts: ' + suggestion.edibleParts.join(', ');
+        await createNote(token, note);
+      }
+      if (suggestion.propagationMethods != null) {
+        note.text =
+            'Propagation methods: ' + suggestion.propagationMethods.join(', ');
+        await createNote(token, note);
+      }
+    }
   }
 
   @override
@@ -176,7 +211,7 @@ class _EditPlantPageState extends State<EditPlantPage> {
         ],
       ),
       body: FutureBuilder<Widget>(
-        future: _buildForm(),
+        future: _futureWidget,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             return snapshot.data;

@@ -37,10 +37,14 @@ class _NoteCardState extends State<NoteCard> {
       Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: <Widget>[
-          Text(
-            note.text,
-            style: const TextStyle(fontSize: 15),
-          )
+          Expanded(
+            child: Text(
+              note.text,
+              style: const TextStyle(fontSize: 15),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 5,
+            ),
+          ),
         ],
       ),
     ];

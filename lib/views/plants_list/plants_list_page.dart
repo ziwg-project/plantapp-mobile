@@ -5,6 +5,8 @@ import 'package:plants_app/utils.dart';
 import 'package:plants_app/views/drawer_navigation.dart';
 import 'package:plants_app/views/plant_add_edit/add_plant_page.dart';
 import 'package:plants_app/views/plants_list/plants_list_card.dart';
+import 'package:reactive_forms/reactive_forms.dart';
+import 'dart:async';
 
 class PlantsListPage extends StatefulWidget {
   @override
@@ -12,8 +14,25 @@ class PlantsListPage extends StatefulWidget {
 }
 
 class _PlantsListPageState extends State<PlantsListPage> {
-  Future<List<List<Widget>>> _buildSpecificLocations(
-      List<Location> locations, List<Plant> plants) async {
+  List<Plant> plants = [];
+  Future<List<Widget>> _futureWidgets;
+
+  @override
+  void initState() {
+    super.initState();
+    getToken().then((value) => {
+          fetchAllPlants(value, query: '').then((response) {
+            plants = response;
+          })
+        });
+    _futureWidgets = _buildWidgets();
+  }
+
+  final searchForm = FormGroup({
+    'name': FormControl<String>(value: ''),
+  });
+
+  List<List<Widget>> _buildSpecificLocations(List<Location> locations) {
     List<Widget> inside = [];
     List<Widget> outside = [];
     for (int i = 0; i < locations.length; i++) {
@@ -56,15 +75,48 @@ class _PlantsListPageState extends State<PlantsListPage> {
     return [inside, outside];
   }
 
-  callback() {
-    setState(() {});
+  @override
+  void didUpdateWidget(PlantsListPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    setState(() {
+      getToken().then((value) => {
+            fetchAllPlants(value, query: '').then((response) {
+              plants = response;
+            })
+          });
+      searchForm.control('name').value = '';
+      _futureWidgets = _buildWidgets();
+    });
   }
 
-  List<Widget> _buildExpandedItems(List<Plant> plants) {
+  callback() {
+    setState(() {
+      searchForm.control('name').value = '';
+      getToken().then((value) => {
+            fetchAllPlants(value, query: '').then((response) {
+              plants = response;
+            })
+          });
+      _futureWidgets = _buildWidgets();
+    });
+  }
+
+  onSearchSubmit() async {
+    String token = await getToken();
+    var response = await fetchAllPlants(token,
+        query: this.searchForm.control('name').value);
+    this.setState(() {
+      plants = response;
+      _futureWidgets = _buildWidgets();
+    });
+  }
+
+  List<Widget> _buildExpandedItems(List<Plant> selectedPlants) {
     List<Widget> list = [];
-    for (int i = 0; i < plants.length; i++) {
+    for (int i = 0; i < selectedPlants.length; i++) {
       list.add(
-        PlantsListCard(plant: plants[i], notifyParent: callback),
+        PlantsListCard(
+            plant: selectedPlants[i], notifyParent: callback, key: UniqueKey()),
       );
     }
     return list;
@@ -74,9 +126,33 @@ class _PlantsListPageState extends State<PlantsListPage> {
     String token = await getToken();
     List<Widget> items = [];
     List<Location> locations = await fetchAllLocations(token);
-    List<Plant> plants = await fetchAllPlants(token);
-    List<List<Widget>> specificLocations =
-        await _buildSpecificLocations(locations, plants);
+    if (plants.isEmpty) {
+      plants = await fetchAllPlants(token,
+          query: this.searchForm.control('name').value);
+    }
+    List<List<Widget>> specificLocations = _buildSpecificLocations(locations);
+    items.add(ReactiveForm(
+        formGroup: this.searchForm,
+        child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 5),
+            child: Center(
+                child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                ReactiveForm(
+                    formGroup: this.searchForm,
+                    child: ReactiveTextField<String>(
+                        formControlName: 'name',
+                        onSubmitted: onSearchSubmit,
+                        decoration: const InputDecoration(
+                          suffixIcon: Icon(Icons.search),
+                          labelText: 'Plant name',
+                          helperStyle: TextStyle(height: 0.7),
+                          errorStyle: TextStyle(height: 0.7),
+                        ))),
+                const SizedBox(height: 20.0),
+              ],
+            )))));
     for (int i = 0; i < 2; i++) {
       items.add(
         Card(
@@ -110,10 +186,17 @@ class _PlantsListPageState extends State<PlantsListPage> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => AddPlantPage(),
+                  builder: (context) => AddPlantPage(notifyParent: callback),
                 ),
               ).then((value) {
-                setState(() {});
+                setState(() {
+                  getToken().then((value) => {
+                        fetchAllPlants(value, query: '').then((response) {
+                          plants = response;
+                        })
+                      });
+                  _futureWidgets = _buildWidgets();
+                });
               });
             },
           ),
@@ -122,7 +205,7 @@ class _PlantsListPageState extends State<PlantsListPage> {
       drawer: DrawerNavigation(),
       body: Container(
         child: FutureBuilder<List<Widget>>(
-          future: _buildWidgets(),
+          future: _futureWidgets,
           builder: (context, snapshot) {
             if (snapshot.hasData) {
               return ListView.builder(
