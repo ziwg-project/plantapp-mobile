@@ -12,7 +12,6 @@ class AddNotePage extends StatefulWidget {
 
 class _AddNotePageState extends State<AddNotePage> {
   final _formKey = GlobalKey<FormState>();
-  String locationText;
   int plantId;
   String _noteText;
 
@@ -28,7 +27,7 @@ class _AddNotePageState extends State<AddNotePage> {
           maxLines: 20,
           minLines: 1,
           maxLength: 1000,
-          decoration: InputDecoration(
+          decoration: const InputDecoration(
             icon: Icon(Icons.eco),
             labelText: 'Note',
           ),
@@ -56,10 +55,10 @@ class _AddNotePageState extends State<AddNotePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Add note'),
+        title: const Text('Add note'),
         actions: <Widget>[
           IconButton(
-            icon: Icon(
+            icon: const Icon(
               Icons.add_circle_outline_rounded,
               size: 30.0,
             ),

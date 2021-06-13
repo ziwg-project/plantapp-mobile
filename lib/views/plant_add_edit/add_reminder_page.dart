@@ -25,7 +25,7 @@ class _AddReminderPageState extends State<AddReminderPage> {
   DateTime date;
   DateTime time;
   String reminderName;
-  List<String> intervalList = ['S', 'M', 'H', 'D', 'W', 'm', 'Y'];
+  final List<String> intervalList = ['S', 'M', 'H', 'D', 'W', 'm', 'Y'];
 
   _AddReminderPageState(this.plantId);
 
@@ -56,7 +56,7 @@ class _AddReminderPageState extends State<AddReminderPage> {
       child: Padding(
         padding: const EdgeInsets.all(20.0),
         child: TextFormField(
-          decoration: InputDecoration(
+          decoration: const InputDecoration(
             icon: Icon(Icons.eco),
             labelText: 'Name',
           ),
@@ -78,7 +78,7 @@ class _AddReminderPageState extends State<AddReminderPage> {
       child: Padding(
         padding: const EdgeInsets.all(20.0),
         child: DateTimeField(
-          decoration: InputDecoration(
+          decoration: const InputDecoration(
             icon: Icon(Icons.calendar_today),
             labelText: 'Start date',
           ),
@@ -109,7 +109,7 @@ class _AddReminderPageState extends State<AddReminderPage> {
       child: Padding(
         padding: const EdgeInsets.all(20.0),
         child: DateTimeField(
-          decoration: InputDecoration(
+          decoration: const InputDecoration(
             icon: Icon(Icons.alarm),
             labelText: 'Time',
           ),
@@ -140,7 +140,7 @@ class _AddReminderPageState extends State<AddReminderPage> {
       margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       child: Column(
         children: [
-          ListTile(
+          const ListTile(
             title: const Text('Repeat'),
             leading: Icon(Icons.repeat),
           ),
@@ -170,10 +170,10 @@ class _AddReminderPageState extends State<AddReminderPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Add reminder'),
+        title: const Text('Add reminder'),
         actions: <Widget>[
           IconButton(
-            icon: Icon(
+            icon: const Icon(
               Icons.add_circle_outline_rounded,
               size: 30.0,
             ),

@@ -24,7 +24,7 @@ class _ReminderCardState extends State<ReminderCard> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: <Widget>[
-        Icon(
+        const Icon(
           Icons.alarm,
           size: 20.0,
         ),
@@ -38,7 +38,7 @@ class _ReminderCardState extends State<ReminderCard> {
             ),
           ],
         ),
-        SizedBox(
+        const SizedBox(
           width: 5,
         ),
         Column(
@@ -51,7 +51,7 @@ class _ReminderCardState extends State<ReminderCard> {
             ),
           ],
         ),
-        SizedBox(
+        const SizedBox(
           width: 5,
         ),
       ],
@@ -99,7 +99,7 @@ class _ReminderCardState extends State<ReminderCard> {
               const SizedBox(
                 width: 5,
               ),
-              Text('Edit'),
+              const Text('Edit'),
             ],
           ),
         ),
@@ -111,7 +111,7 @@ class _ReminderCardState extends State<ReminderCard> {
               const SizedBox(
                 width: 5,
               ),
-              Text('Delete'),
+              const Text('Delete'),
             ],
           ),
         ),

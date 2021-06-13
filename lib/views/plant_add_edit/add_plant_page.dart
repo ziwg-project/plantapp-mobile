@@ -67,7 +67,7 @@ class _AddPlantPageState extends State<AddPlantPage> {
       child: Padding(
         padding: const EdgeInsets.all(20.0),
         child: TextFormField(
-          decoration: InputDecoration(
+          decoration: const InputDecoration(
             icon: Icon(Icons.eco),
             labelText: 'Name',
           ),
@@ -90,7 +90,7 @@ class _AddPlantPageState extends State<AddPlantPage> {
       child: Padding(
         padding: const EdgeInsets.all(20.0),
         child: TextFormField(
-          decoration: InputDecoration(
+          decoration: const InputDecoration(
             icon: Icon(Icons.eco_outlined),
             labelText: 'Scientific name',
           ),
@@ -117,7 +117,7 @@ class _AddPlantPageState extends State<AddPlantPage> {
           padding: const EdgeInsets.all(20.0),
           child: TextFormField(
             decoration: InputDecoration(
-              icon: Icon(Icons.location_on),
+              icon: const Icon(Icons.location_on),
               labelText: locationText == null ? 'Location' : locationText,
               labelStyle: locationText == null
                   ? TextStyle(color: Colors.black54)
@@ -188,10 +188,10 @@ class _AddPlantPageState extends State<AddPlantPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Add plant'),
+        title: const Text('Add plant'),
         actions: <Widget>[
           IconButton(
-            icon: Icon(
+            icon: const Icon(
               Icons.add_circle_outline_rounded,
               size: 30.0,
             ),

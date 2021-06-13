@@ -25,13 +25,13 @@ class _NoteCardState extends State<NoteCard> {
       Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: <Widget>[
-          Icon(
+          const Icon(
             Icons.note,
             size: 20.0,
           ),
         ],
       ),
-      SizedBox(
+      const SizedBox(
         height: 10,
       ),
       Row(
@@ -41,8 +41,7 @@ class _NoteCardState extends State<NoteCard> {
             child: Text(
               note.text,
               style: const TextStyle(fontSize: 15),
-              overflow: TextOverflow.ellipsis,
-              maxLines: 5,
+              textAlign: TextAlign.justify,
             ),
           ),
         ],
@@ -59,11 +58,11 @@ class _NoteCardState extends State<NoteCard> {
           value: 0,
           child: Row(
             children: <Widget>[
-              Icon(Icons.edit),
+              const Icon(Icons.edit),
               const SizedBox(
                 width: 5,
               ),
-              Text('Edit'),
+              const Text('Edit'),
             ],
           ),
         ),
@@ -71,11 +70,11 @@ class _NoteCardState extends State<NoteCard> {
           value: 1,
           child: Row(
             children: <Widget>[
-              Icon(Icons.delete),
+              const Icon(Icons.delete),
               const SizedBox(
                 width: 5,
               ),
-              Text('Delete'),
+              const Text('Delete'),
             ],
           ),
         ),

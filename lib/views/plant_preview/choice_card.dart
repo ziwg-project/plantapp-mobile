@@ -40,7 +40,7 @@ class _ChoiceCardState extends State<ChoiceCard> {
     return Container(
       height: 35,
       margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.all(Radius.circular(5.0)),
         boxShadow: [BoxShadow(color: Colors.grey, blurRadius: 1.0)],
@@ -51,7 +51,7 @@ class _ChoiceCardState extends State<ChoiceCard> {
           Expanded(
             child: _buildChoiceButton(0),
           ),
-          VerticalDivider(
+          const VerticalDivider(
             color: Colors.grey,
             width: 1,
           ),
@@ -71,7 +71,7 @@ class _ChoiceCardState extends State<ChoiceCard> {
           _futureWidget = _buildList();
         });
       },
-      child: choice == 0 ? Text('Reminders') : Text('Notes'),
+      child: choice == 0 ? const Text('Reminders') : const Text('Notes'),
       style: ButtonStyle(
         backgroundColor: widgetChoice == choice
             ? MaterialStateProperty.all<Color>(Colors.green)
@@ -85,13 +85,13 @@ class _ChoiceCardState extends State<ChoiceCard> {
 
   Future<Widget> _buildList() async {
     List<Widget> items = await _buildChosenList();
-    return Expanded(
-      child: ListView.builder(
-        itemCount: items.length,
-        itemBuilder: (context, index) {
-          return items[index];
-        },
-      ),
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: NeverScrollableScrollPhysics(),
+      itemCount: items.length,
+      itemBuilder: (context, index) {
+        return items[index];
+      },
     );
   }
 
@@ -130,31 +130,29 @@ class _ChoiceCardState extends State<ChoiceCard> {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-        decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.all(Radius.circular(10.0)),
-            boxShadow: [BoxShadow(color: Colors.grey, blurRadius: 1.0)]),
-        child: Padding(
-          padding: const EdgeInsets.all(10.0),
-          child: Column(
-            children: [
-              _buildChoiceRow(),
-              FutureBuilder<Widget>(
-                future: _futureWidget,
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    return snapshot.data;
-                  } else if (snapshot.hasError) {
-                    return Center(child: Text("${snapshot.error}"));
-                  }
-                  return Center(child: CircularProgressIndicator());
-                },
-              ),
-            ],
-          ),
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+      decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.all(Radius.circular(10.0)),
+          boxShadow: [BoxShadow(color: Colors.grey, blurRadius: 1.0)]),
+      child: Padding(
+        padding: const EdgeInsets.all(10.0),
+        child: Column(
+          children: [
+            _buildChoiceRow(),
+            FutureBuilder<Widget>(
+              future: _futureWidget,
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  return snapshot.data;
+                } else if (snapshot.hasError) {
+                  return Center(child: Text("${snapshot.error}"));
+                }
+                return Center(child: CircularProgressIndicator());
+              },
+            ),
+          ],
         ),
       ),
     );

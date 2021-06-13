@@ -107,9 +107,9 @@ class _LocationPageState extends State<LocationPage> {
         PopupMenuItem(
           value: 0,
           child: Row(
-            children: <Widget>[
+            children: const <Widget>[
               Icon(Icons.edit),
-              const SizedBox(
+              SizedBox(
                 width: 5,
               ),
               Text('Edit'),
@@ -119,9 +119,9 @@ class _LocationPageState extends State<LocationPage> {
         PopupMenuItem(
           value: 1,
           child: Row(
-            children: <Widget>[
+            children: const <Widget>[
               Icon(Icons.delete),
-              const SizedBox(
+              SizedBox(
                 width: 5,
               ),
               Text('Delete'),
@@ -199,7 +199,7 @@ class _LocationPageState extends State<LocationPage> {
         title: Text(fromList ? 'Locations' : 'Choose location'),
       ),
       floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.add),
+        child: const Icon(Icons.add),
         onPressed: () {
           _addLocationDialog(context);
         },

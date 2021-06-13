@@ -55,7 +55,7 @@ class _SuggestionDialogState extends State<SuggestionDialog> {
                   )
                 ],
               ),
-              SizedBox(
+              const SizedBox(
                 width: 5,
               ),
               Column(
@@ -82,15 +82,18 @@ class _SuggestionDialogState extends State<SuggestionDialog> {
     String token = await getToken();
     List<Suggestion> suggestions = await fetchSuggestions(photoPath, token);
     if (suggestions.isNotEmpty) {
-      return ListView.builder(
-        shrinkWrap: true,
-        itemCount: suggestions.length,
-        itemBuilder: (context, index) {
-          return _buildItem(suggestions[index]);
-        },
+      return Container(
+        height: 400,
+        child: ListView.builder(
+          shrinkWrap: true,
+          itemCount: suggestions.length,
+          itemBuilder: (context, index) {
+            return _buildItem(suggestions[index]);
+          },
+        ),
       );
     }
-    return Center(child: Text('No suggestions found for this plant'));
+    return Center(child: const Text('No suggestions found for this plant'));
   }
 
   Widget _buildButtons(BuildContext context) {
@@ -101,7 +104,7 @@ class _SuggestionDialogState extends State<SuggestionDialog> {
           onPressed: () {
             Navigator.pop(context);
           },
-          child: Text('Cancel'),
+          child: const Text('Cancel'),
         ),
       ],
     );
@@ -123,7 +126,7 @@ class _SuggestionDialogState extends State<SuggestionDialog> {
             return Center(child: CircularProgressIndicator());
           },
         ),
-        _buildButtons(context),
+        Container(child: _buildButtons(context)),
       ],
     );
   }
@@ -131,7 +134,7 @@ class _SuggestionDialogState extends State<SuggestionDialog> {
   @override
   Widget build(BuildContext context) {
     return SimpleDialog(
-      title: Text('Suggestions'),
+      title: const Text('Suggestions'),
       children: <Widget>[
         Container(
           width: double.maxFinite,

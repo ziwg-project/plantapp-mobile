@@ -28,7 +28,7 @@ class _PlantsListCardState extends State<PlantsListCard> {
               (plant.image != null) ? NetworkImage(plant.image) : null,
           backgroundColor: Colors.grey[200],
         ),
-        SizedBox(
+        const SizedBox(
           width: 25,
         ),
         Column(
@@ -45,7 +45,7 @@ class _PlantsListCardState extends State<PlantsListCard> {
             )
           ],
         ),
-        SizedBox(
+        const SizedBox(
           width: 5,
         ),
       ],

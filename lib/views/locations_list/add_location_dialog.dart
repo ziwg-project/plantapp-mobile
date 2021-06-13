@@ -18,14 +18,14 @@ class _AddLocationDialogState extends State<AddLocationDialog> {
       child: Padding(
         padding: const EdgeInsets.all(20.0),
         child: DropdownButtonFormField(
-          hint: Text("Choose main location"),
+          hint: const Text("Choose main location"),
           value: _mainLocation,
           onChanged: (String value) {
             setState(() {
               _mainLocation = value;
             });
           },
-          items: <String>['Inside', 'Outside'].map((String value) {
+          items: const <String>['Inside', 'Outside'].map((String value) {
             return DropdownMenuItem<String>(
               value: value,
               child: Text(value),
@@ -48,7 +48,7 @@ class _AddLocationDialogState extends State<AddLocationDialog> {
       child: Padding(
         padding: const EdgeInsets.all(20.0),
         child: TextFormField(
-          decoration: InputDecoration(
+          decoration: const InputDecoration(
             labelText: 'Name',
           ),
           validator: (value) {
@@ -81,7 +81,7 @@ class _AddLocationDialogState extends State<AddLocationDialog> {
           onPressed: () {
             Navigator.pop(context);
           },
-          child: Text('Cancel'),
+          child: const Text('Cancel'),
         ),
         TextButton(
           onPressed: () {
@@ -90,7 +90,7 @@ class _AddLocationDialogState extends State<AddLocationDialog> {
               Navigator.pop(context, [_mainLocation, _locationName]);
             }
           },
-          child: Text('Add'),
+          child: const Text('Add'),
         ),
       ],
     );
@@ -99,7 +99,7 @@ class _AddLocationDialogState extends State<AddLocationDialog> {
   @override
   Widget build(BuildContext context) {
     return SimpleDialog(
-      title: Text('Add location'),
+      title: const Text('Add location'),
       children: <Widget>[
         Form(
           key: _formKey,

@@ -6,7 +6,7 @@ class Location {
   int id;
   int ownerFk;
   String name;
-  String type; // 'O' or 'I'
+  String type;
 
   Location({this.id, this.ownerFk, this.name, this.type});
 

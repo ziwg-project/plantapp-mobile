@@ -29,16 +29,16 @@ class _PhotoCardState extends State<PhotoCard> {
           child: Wrap(
             children: <Widget>[
               ListTile(
-                leading: Icon(Icons.photo_album),
-                title: Text('From gallery'),
+                leading: const Icon(Icons.photo_album),
+                title: const Text('From gallery'),
                 onTap: () {
                   _getImage(true);
                   Navigator.pop(context);
                 },
               ),
               ListTile(
-                leading: Icon(Icons.photo_camera),
-                title: Text('Take a photo'),
+                leading: const Icon(Icons.photo_camera),
+                title: const Text('Take a photo'),
                 onTap: () {
                   _getImage(false);
                   Navigator.pop(context);
@@ -76,12 +76,12 @@ class _PhotoCardState extends State<PhotoCard> {
                 fit: BoxFit.cover,
                 alignment: FractionalOffset.topCenter,
               ),
-              borderRadius: BorderRadius.all(Radius.circular(10.0)),
-              boxShadow: [BoxShadow(color: Colors.grey, blurRadius: 1.0)],
+              borderRadius: const BorderRadius.all(Radius.circular(10.0)),
+              boxShadow: const [BoxShadow(color: Colors.grey, blurRadius: 1.0)],
             ),
           )
         : Container(
-            child: Icon(
+            child: const Icon(
               Icons.add_a_photo,
               size: 75.0,
             ),
@@ -97,7 +97,7 @@ class _PhotoCardState extends State<PhotoCard> {
       child: Container(
         height: 250,
         margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.all(Radius.circular(10.0)),
             boxShadow: [BoxShadow(color: Colors.grey, blurRadius: 1.0)]),
