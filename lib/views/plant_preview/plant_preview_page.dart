@@ -44,7 +44,7 @@ class _PlantPageState extends State<PlantPage> {
   }
 
   Future<Widget> _buildWidgets() async {
-    return Column(
+    return ListView(
       children: <Widget>[
         PlantInfoCard(plantId: plantId, key: UniqueKey()),
         ChoiceCard(plantId: plantId, key: UniqueKey()),
@@ -58,7 +58,7 @@ class _PlantPageState extends State<PlantPage> {
       appBar: AppBar(
         actions: [
           IconButton(
-            icon: Icon(
+            icon: const Icon(
               Icons.edit,
               size: 25.0,
             ),
@@ -78,7 +78,7 @@ class _PlantPageState extends State<PlantPage> {
             },
           ),
           IconButton(
-            icon: Icon(
+            icon: const Icon(
               Icons.delete,
               size: 25.0,
             ),
@@ -95,7 +95,7 @@ class _PlantPageState extends State<PlantPage> {
         foregroundColor: Colors.white,
         children: [
           SpeedDialChild(
-            child: Icon(Icons.alarm_add),
+            child: const Icon(Icons.alarm_add),
             backgroundColor: Colors.green,
             foregroundColor: Colors.white,
             onTap: () {
@@ -114,7 +114,7 @@ class _PlantPageState extends State<PlantPage> {
             },
           ),
           SpeedDialChild(
-            child: Icon(Icons.note_add),
+            child: const Icon(Icons.note_add),
             backgroundColor: Colors.green,
             foregroundColor: Colors.white,
             onTap: () {

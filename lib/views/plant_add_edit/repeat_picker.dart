@@ -35,7 +35,7 @@ class _RepeatPickerState extends State<RepeatPicker> {
 
   Widget _buildStartPicker() {
     return CupertinoTheme(
-      data: CupertinoThemeData(
+      data: const CupertinoThemeData(
         textTheme: CupertinoTextThemeData(
           dateTimePickerTextStyle: TextStyle(
             color: Colors.black,
@@ -45,8 +45,8 @@ class _RepeatPickerState extends State<RepeatPicker> {
       child: CupertinoPicker(
         onSelectedItemChanged: (x) {},
         children: [
-          Padding(
-            padding: const EdgeInsets.all(5.0),
+          const Padding(
+            padding: EdgeInsets.all(5.0),
             child: Text('Every'),
           ),
         ],
@@ -57,7 +57,7 @@ class _RepeatPickerState extends State<RepeatPicker> {
 
   Widget _buildDurationPicker() {
     return CupertinoTheme(
-      data: CupertinoThemeData(
+      data: const CupertinoThemeData(
         textTheme: CupertinoTextThemeData(
           dateTimePickerTextStyle: TextStyle(
             color: Colors.black,
@@ -87,7 +87,7 @@ class _RepeatPickerState extends State<RepeatPicker> {
 
   Widget _buildIntervalPicker() {
     return CupertinoTheme(
-      data: CupertinoThemeData(
+      data: const CupertinoThemeData(
         textTheme: CupertinoTextThemeData(
           dateTimePickerTextStyle: TextStyle(
             color: Colors.black,

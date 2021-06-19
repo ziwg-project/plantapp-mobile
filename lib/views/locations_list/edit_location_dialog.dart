@@ -22,14 +22,14 @@ class _EditLocationDialogState extends State<EditLocationDialog> {
       child: Padding(
         padding: const EdgeInsets.all(20.0),
         child: DropdownButtonFormField(
-          hint: Text("Choose main location"),
+          hint: const Text("Choose main location"),
           value: location.type == 'I' ? 'Inside' : 'Outside',
           onChanged: (String value) {
             setState(() {
               location.type = value == 'Inside' ? 'I' : 'O';
             });
           },
-          items: <String>['Inside', 'Outside'].map((String value) {
+          items: const <String>['Inside', 'Outside'].map((String value) {
             return DropdownMenuItem<String>(
               value: value,
               child: Text(value),
@@ -46,7 +46,7 @@ class _EditLocationDialogState extends State<EditLocationDialog> {
       child: Padding(
         padding: const EdgeInsets.all(20.0),
         child: TextFormField(
-          decoration: InputDecoration(
+          decoration: const InputDecoration(
             labelText: 'Name',
           ),
           initialValue: location.name,
@@ -72,7 +72,7 @@ class _EditLocationDialogState extends State<EditLocationDialog> {
           onPressed: () {
             Navigator.pop(context);
           },
-          child: Text('Cancel'),
+          child: const Text('Cancel'),
         ),
         TextButton(
           onPressed: () {
@@ -80,7 +80,7 @@ class _EditLocationDialogState extends State<EditLocationDialog> {
               Navigator.pop(context, location);
             }
           },
-          child: Text('Save'),
+          child: const Text('Save'),
         ),
       ],
     );
@@ -89,7 +89,7 @@ class _EditLocationDialogState extends State<EditLocationDialog> {
   @override
   Widget build(BuildContext context) {
     return SimpleDialog(
-      title: Text('Edit location'),
+      title: const Text('Edit location'),
       children: <Widget>[
         Form(
           key: _formKey,

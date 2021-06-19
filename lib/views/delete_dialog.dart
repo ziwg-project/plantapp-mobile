@@ -9,21 +9,21 @@ class _DeleteDialogState extends State<DeleteDialog> {
   @override
   Widget build(BuildContext context) {
     return SimpleDialog(
-      title: Text('Confirm deletion:'),
+      title: const Text('Confirm deletion:'),
       children: <Widget>[
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             TextButton(
-              child: Text('Cancel'),
+              child: const Text('Cancel'),
               onPressed: () {
                 Navigator.pop(context, false);
               },
             ),
             TextButton(
-              child: Text(
+              child: const Text(
                 'Delete',
-                style: TextStyle(
+                style: const TextStyle(
                   color: Colors.red,
                 ),
               ),

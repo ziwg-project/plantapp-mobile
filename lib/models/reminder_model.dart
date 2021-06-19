@@ -7,7 +7,7 @@ class Reminder {
   String text;
   DateTime baseTmstp;
   int intrvlNum;
-  String intrvlType; // 'S', 'M', 'H', 'D', 'W' - change to 'H', 'D', 'W', 'M' ?
+  String intrvlType;
   int plantFk;
 
   Reminder({

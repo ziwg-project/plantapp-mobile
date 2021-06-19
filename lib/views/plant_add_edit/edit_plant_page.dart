@@ -89,7 +89,7 @@ class _EditPlantPageState extends State<EditPlantPage> {
       child: Padding(
         padding: const EdgeInsets.all(20.0),
         child: TextFormField(
-          decoration: InputDecoration(
+          decoration: const InputDecoration(
             icon: Icon(Icons.eco),
             labelText: 'Name',
           ),
@@ -112,7 +112,7 @@ class _EditPlantPageState extends State<EditPlantPage> {
       child: Padding(
         padding: const EdgeInsets.all(20.0),
         child: TextFormField(
-          decoration: InputDecoration(
+          decoration: const InputDecoration(
             icon: Icon(Icons.eco_outlined),
             labelText: 'Scientific name',
           ),
@@ -137,9 +137,9 @@ class _EditPlantPageState extends State<EditPlantPage> {
           padding: const EdgeInsets.all(20.0),
           child: TextFormField(
             decoration: InputDecoration(
-              icon: Icon(Icons.location_on),
+              icon: const Icon(Icons.location_on),
               labelText: locationText,
-              labelStyle: TextStyle(color: Colors.black),
+              labelStyle: const TextStyle(color: Colors.black),
             ),
             enabled: false,
           ),

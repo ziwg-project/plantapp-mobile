@@ -20,7 +20,7 @@ class _EditReminderPageState extends State<EditReminderPage> {
   final _formKey = GlobalKey<FormState>();
   final dateFormat = DateFormat("dd-MM-yyyy");
   final timeFormat = DateFormat("HH:mm");
-  List<String> intervalList = ['S', 'M', 'H', 'D', 'W', 'm', 'Y'];
+  final List<String> intervalList = ['S', 'M', 'H', 'D', 'W', 'm', 'Y'];
   int durationIndex;
   int intervalIndex;
   DateTime date;
@@ -64,7 +64,7 @@ class _EditReminderPageState extends State<EditReminderPage> {
         padding: const EdgeInsets.all(20.0),
         child: TextFormField(
           decoration: InputDecoration(
-            icon: Icon(Icons.eco),
+            icon: const Icon(Icons.eco),
             labelText: 'Name',
           ),
           initialValue: reminder.text,
@@ -86,7 +86,7 @@ class _EditReminderPageState extends State<EditReminderPage> {
       child: Padding(
         padding: const EdgeInsets.all(20.0),
         child: DateTimeField(
-          decoration: InputDecoration(
+          decoration: const InputDecoration(
             icon: Icon(Icons.calendar_today),
             labelText: 'Start date',
           ),
@@ -117,7 +117,7 @@ class _EditReminderPageState extends State<EditReminderPage> {
       child: Padding(
         padding: const EdgeInsets.all(20.0),
         child: DateTimeField(
-          decoration: InputDecoration(
+          decoration: const InputDecoration(
             icon: Icon(Icons.alarm),
             labelText: 'Time',
           ),
@@ -148,7 +148,7 @@ class _EditReminderPageState extends State<EditReminderPage> {
       margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       child: Column(
         children: [
-          ListTile(
+          const ListTile(
             title: const Text('Repeat'),
             leading: Icon(Icons.repeat),
           ),
@@ -175,10 +175,10 @@ class _EditReminderPageState extends State<EditReminderPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Edit reminder'),
+        title: const Text('Edit reminder'),
         actions: <Widget>[
           IconButton(
-            icon: Icon(
+            icon: const Icon(
               Icons.add_circle_outline_rounded,
               size: 30.0,
             ),

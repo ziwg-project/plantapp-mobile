@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:plants_app/models/location_model.dart';
 import 'package:plants_app/models/plant_model.dart';
@@ -135,7 +134,7 @@ class _PlantsListPageState extends State<PlantsListPage> {
     items.add(ReactiveForm(
         formGroup: this.searchForm,
         child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 5),
+            padding: const EdgeInsets.symmetric(horizontal: 5),
             child: Center(
                 child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -176,10 +175,10 @@ class _PlantsListPageState extends State<PlantsListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Plants'),
+        title: const Text('Plants'),
         actions: [
           IconButton(
-            icon: Icon(
+            icon: const Icon(
               Icons.add_circle_outline_rounded,
               size: 30.0,
             ),

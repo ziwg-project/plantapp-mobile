@@ -43,8 +43,8 @@ class _PlantInfoCardState extends State<PlantInfoCard> {
             fit: BoxFit.cover,
             alignment: FractionalOffset.topCenter,
           ),
-          borderRadius: BorderRadius.all(Radius.circular(10.0)),
-          boxShadow: [BoxShadow(color: Colors.grey, blurRadius: 1.0)],
+          borderRadius: const BorderRadius.all(Radius.circular(10.0)),
+          boxShadow: const [BoxShadow(color: Colors.grey, blurRadius: 1.0)],
         ),
       ),
     );
@@ -54,7 +54,7 @@ class _PlantInfoCardState extends State<PlantInfoCard> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: <Widget>[
-        SizedBox(
+        const SizedBox(
           height: 5,
         ),
         Column(
@@ -71,7 +71,7 @@ class _PlantInfoCardState extends State<PlantInfoCard> {
             )
           ],
         ),
-        SizedBox(
+        const SizedBox(
           height: 5,
         ),
         Column(
@@ -88,7 +88,7 @@ class _PlantInfoCardState extends State<PlantInfoCard> {
             )
           ],
         ),
-        SizedBox(
+        const SizedBox(
           height: 5,
         ),
       ],
@@ -102,7 +102,7 @@ class _PlantInfoCardState extends State<PlantInfoCard> {
     return Container(
       height: plant.image == null ? 75 : 300,
       margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.all(Radius.circular(10.0)),
           boxShadow: [BoxShadow(color: Colors.grey, blurRadius: 1.0)]),
