@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:plants_app/models/note_model.dart';
+import 'package:plants_app/models/reminder_log_model.dart';
 import 'package:plants_app/models/reminder_model.dart';
 import 'package:plants_app/views/plant_preview/note_card.dart';
 import 'package:plants_app/views/plant_preview/reminder_card.dart';
 import '../../utils.dart';
+import 'log_card.dart';
 
 class ChoiceCard extends StatefulWidget {
   final int plantId;
@@ -17,7 +19,6 @@ class ChoiceCard extends StatefulWidget {
 class _ChoiceCardState extends State<ChoiceCard> {
   final int plantId;
   int widgetChoice = 0;
-  List<Widget> items = [];
   Future<Widget> _futureWidget;
 
   _ChoiceCardState(this.plantId);
@@ -58,6 +59,13 @@ class _ChoiceCardState extends State<ChoiceCard> {
           Expanded(
             child: _buildChoiceButton(1),
           ),
+          const VerticalDivider(
+            color: Colors.grey,
+            width: 1,
+          ),
+          Expanded(
+            child: _buildChoiceButton(2),
+          ),
         ],
       ),
     );
@@ -71,7 +79,11 @@ class _ChoiceCardState extends State<ChoiceCard> {
           _futureWidget = _buildList();
         });
       },
-      child: choice == 0 ? const Text('Reminders') : const Text('Notes'),
+      child: choice == 0
+          ? const Text('Reminders')
+          : choice == 1
+              ? const Text('Notes')
+              : const Text('History'),
       style: ButtonStyle(
         backgroundColor: widgetChoice == choice
             ? MaterialStateProperty.all<Color>(Colors.green)
@@ -114,13 +126,31 @@ class _ChoiceCardState extends State<ChoiceCard> {
             key: UniqueKey(),
           ));
       });
-    } else {
+    } else if (widgetChoice == 1) {
       List<Note> notes = await fetchAllNotes(token);
       notes.forEach((note) {
         if (note.plantFk == plantId)
           items.add(NoteCard(
             note: note,
             notifyParent: callback,
+            key: UniqueKey(),
+          ));
+      });
+    } else {
+      List<ReminderLog> logs = await fetchAllLogs(token);
+      List<Reminder> reminders = await fetchAllReminders(token);
+      List<int> ids;
+      reminders.forEach((reminder) {
+        if (reminder.plantFk != plantId)
+          reminders.remove(reminder);
+        else
+          ids.add(reminder.id);
+      });
+      logs.forEach((log) {
+        if (ids.contains(log.reminderFk))
+          items.add(LogCard(
+            log: log,
+            text: reminders[ids.indexOf(log.reminderFk)].text,
             key: UniqueKey(),
           ));
       });

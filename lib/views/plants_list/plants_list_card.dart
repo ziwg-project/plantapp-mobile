@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:plants_app/models/plant_model.dart';
-import 'package:plants_app/utils.dart';
 import 'package:plants_app/views/plant_preview/plant_preview_page.dart';
 
 class PlantsListCard extends StatefulWidget {
@@ -52,11 +51,6 @@ class _PlantsListCardState extends State<PlantsListCard> {
     );
   }
 
-  _loadPlant() async {
-    String token = await getToken();
-    plant = await fetchPlant(token, plant.id.toString());
-  }
-
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -71,10 +65,7 @@ class _PlantsListCardState extends State<PlantsListCard> {
             ),
           ),
         ).then(
-          (value) async {
-            if (value == null) {
-              await _loadPlant();
-            }
+          (value) {
             widget.notifyParent();
           },
         );
