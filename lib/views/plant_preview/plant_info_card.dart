@@ -16,21 +16,33 @@ class PlantInfoCard extends StatefulWidget {
 
 class _PlantInfoCardState extends State<PlantInfoCard> {
   final int plantId;
-  Future<Widget> _futureWidget;
+  Future<Plant> _futurePlant;
+  Future<Location> _futureLocation;
 
   _PlantInfoCardState(this.plantId);
 
   @override
   void initState() {
     super.initState();
-    _futureWidget = _buildWidgets();
+    _futurePlant = _getPlant();
+    _futureLocation = _getLocation();
+  }
+
+  Future<Plant> _getPlant() async {
+    return fetchPlant(await getToken(), plantId.toString());
+  }
+
+  Future<Location> _getLocation() async {
+    return fetchLocation(
+        await getToken(), (await _futurePlant).locFk.toString());
   }
 
   @override
   void didUpdateWidget(PlantInfoCard oldWidget) {
     super.didUpdateWidget(oldWidget);
     setState(() {
-      _futureWidget = _buildWidgets();
+      _futurePlant = _getPlant();
+      _futureLocation = _getLocation();
     });
   }
 
@@ -95,10 +107,7 @@ class _PlantInfoCardState extends State<PlantInfoCard> {
     );
   }
 
-  Future<Widget> _buildWidgets() async {
-    String token = await getToken();
-    Plant plant = await fetchPlant(token, plantId.toString());
-    Location location = await fetchLocation(token, plant.locFk.toString());
+  Widget _buildWidgets(Plant plant) {
     return Container(
       height: plant.image == null ? 75 : 300,
       margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
@@ -114,7 +123,17 @@ class _PlantInfoCardState extends State<PlantInfoCard> {
             SizedBox(
               height: plant.image == null ? 5 : 10,
             ),
-            _buildInfoRow(plant, location),
+            FutureBuilder<Location>(
+              future: _futureLocation,
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  return _buildInfoRow(plant, snapshot.data);
+                } else if (snapshot.hasError) {
+                  return Center(child: Text("${snapshot.error}"));
+                }
+                return Center(child: CircularProgressIndicator());
+              },
+            ),
           ],
         ),
       ),
@@ -123,11 +142,11 @@ class _PlantInfoCardState extends State<PlantInfoCard> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<Widget>(
-      future: _futureWidget,
+    return FutureBuilder<Plant>(
+      future: _futurePlant,
       builder: (context, snapshot) {
         if (snapshot.hasData) {
-          return snapshot.data;
+          return _buildWidgets(snapshot.data);
         } else if (snapshot.hasError) {
           return Center(child: Text("${snapshot.error}"));
         }
