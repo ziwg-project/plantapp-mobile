@@ -63,6 +63,6 @@ Future<List<Suggestion>> fetchSuggestions(String filePath, String token) async {
     var list = data['suggestions'] as List;
     return list.map<Suggestion>((json) => Suggestion.fromJson(json)).toList();
   } else {
-    return [];
+    throw Exception('Failure fetching suggestions');
   }
 }

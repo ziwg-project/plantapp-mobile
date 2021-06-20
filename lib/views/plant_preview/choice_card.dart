@@ -19,21 +19,47 @@ class ChoiceCard extends StatefulWidget {
 class _ChoiceCardState extends State<ChoiceCard> {
   final int plantId;
   int widgetChoice = 0;
-  Future<Widget> _futureWidget;
+  Future<List<Reminder>> _futureReminders;
+  Future<List<Note>> _futureNotes;
+  Future<List<ReminderLog>> _futureLogs;
 
   _ChoiceCardState(this.plantId);
 
   @override
   void initState() {
     super.initState();
-    _futureWidget = _buildList();
+    _futureReminders = _getReminders();
+    _futureNotes = _getNotes();
+    _futureLogs = _getLogs();
+  }
+
+  Future<List<Reminder>> _getReminders() async {
+    return fetchAllReminders(await getToken());
+  }
+
+  Future<List<Note>> _getNotes() async {
+    return fetchAllNotes(await getToken());
+  }
+
+  Future<List<ReminderLog>> _getLogs() async {
+    return fetchAllLogs(await getToken());
   }
 
   @override
   void didUpdateWidget(ChoiceCard oldWidget) {
     super.didUpdateWidget(oldWidget);
     setState(() {
-      _futureWidget = _buildList();
+      _futureReminders = _getReminders();
+      _futureNotes = _getNotes();
+      _futureLogs = _getLogs();
+    });
+  }
+
+  callback() {
+    setState(() {
+      _futureReminders = _getReminders();
+      _futureNotes = _getNotes();
+      _futureLogs = _getLogs();
     });
   }
 
@@ -76,7 +102,16 @@ class _ChoiceCardState extends State<ChoiceCard> {
       onPressed: () {
         setState(() {
           widgetChoice = choice;
-          _futureWidget = _buildList();
+          if (choice == 0) {
+            _futureReminders = _getReminders();
+          }
+          if (choice == 1) {
+            _futureNotes = _getNotes();
+          }
+          if (choice == 2) {
+            _futureReminders = _getReminders();
+            _futureLogs = _getLogs();
+          }
         });
       },
       child: choice == 0
@@ -95,67 +130,113 @@ class _ChoiceCardState extends State<ChoiceCard> {
     );
   }
 
-  Future<Widget> _buildList() async {
-    List<Widget> items = await _buildChosenList();
-    return ListView.builder(
-      shrinkWrap: true,
-      physics: NeverScrollableScrollPhysics(),
-      itemCount: items.length,
-      itemBuilder: (context, index) {
-        return items[index];
-      },
-    );
-  }
-
-  callback() {
-    setState(() {
-      _futureWidget = _buildList();
-    });
-  }
-
-  Future<List<Widget>> _buildChosenList() async {
-    String token = await getToken();
-    List<Widget> items = [];
+  Widget _buildList() {
     if (widgetChoice == 0) {
-      List<Reminder> reminders = await fetchAllReminders(token);
-      reminders.forEach((reminder) {
-        if (reminder.plantFk == plantId)
-          items.add(ReminderCard(
-            reminder: reminder,
-            notifyParent: callback,
-            key: UniqueKey(),
-          ));
-      });
+      return FutureBuilder<List<Reminder>>(
+        future: _futureReminders,
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            List<Widget> items = [];
+            snapshot.data.forEach((reminder) {
+              if (reminder.plantFk == plantId)
+                items.add(ReminderCard(
+                  reminder: reminder,
+                  notifyParent: callback,
+                  key: UniqueKey(),
+                ));
+            });
+            return ListView.builder(
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              itemCount: items.length,
+              itemBuilder: (context, index) {
+                return items[index];
+              },
+            );
+          } else if (snapshot.hasError) {
+            return Center(child: Text("${snapshot.error}"));
+          }
+          return Center(child: CircularProgressIndicator());
+        },
+      );
     } else if (widgetChoice == 1) {
-      List<Note> notes = await fetchAllNotes(token);
-      notes.forEach((note) {
-        if (note.plantFk == plantId)
-          items.add(NoteCard(
-            note: note,
-            notifyParent: callback,
-            key: UniqueKey(),
-          ));
-      });
+      return FutureBuilder<List<Note>>(
+        future: _futureNotes,
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            List<Widget> items = [];
+            snapshot.data.forEach((note) {
+              if (note.plantFk == plantId)
+                items.add(NoteCard(
+                  note: note,
+                  notifyParent: callback,
+                  key: UniqueKey(),
+                ));
+            });
+            return ListView.builder(
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              itemCount: items.length,
+              itemBuilder: (context, index) {
+                return items[index];
+              },
+            );
+          } else if (snapshot.hasError) {
+            return Center(child: Text("${snapshot.error}"));
+          }
+          return Center(child: CircularProgressIndicator());
+        },
+      );
     } else {
-      List<ReminderLog> logs = await fetchAllLogs(token);
-      List<Reminder> reminders = await fetchAllReminders(token);
-      List<int> ids;
-      reminders.forEach((reminder) {
-        if (reminder.plantFk != plantId)
-          reminders.remove(reminder);
-        else
-          ids.add(reminder.id);
-      });
-      logs.forEach((log) {
-        if (ids.contains(log.reminderFk))
-          items.add(LogCard(
-            log: log,
-            text: reminders[ids.indexOf(log.reminderFk)].text,
-            key: UniqueKey(),
-          ));
-      });
+      return FutureBuilder<List<Reminder>>(
+        future: _futureReminders,
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            List<Widget> items = [];
+            List<int> ids = [];
+            List<String> reminderTexts = [];
+            snapshot.data.forEach((reminder) {
+              if (reminder.plantFk == plantId) {
+                reminderTexts.add(reminder.text);
+                ids.add(reminder.id);
+              }
+            });
+            return FutureBuilder<List<ReminderLog>>(
+              future: _futureLogs,
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  if (ids.isNotEmpty && reminderTexts.isNotEmpty)
+                    snapshot.data
+                        .sort((a, b) => -a.logTmstp.compareTo(b.logTmstp));
+                  snapshot.data.forEach((log) {
+                    if (ids.contains(log.reminderFk))
+                      items.add(LogCard(
+                        log: log,
+                        text: reminderTexts[ids.indexOf(log.reminderFk)],
+                        key: UniqueKey(),
+                      ));
+                  });
+                  return ListView.builder(
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    itemCount: items.length,
+                    itemBuilder: (context, index) {
+                      return items[index];
+                    },
+                  );
+                } else if (snapshot.hasError) {
+                  return Center(child: Text("${snapshot.error}"));
+                }
+                return Center(child: CircularProgressIndicator());
+              },
+            );
+          } else if (snapshot.hasError) {
+            return Center(child: Text("${snapshot.error}"));
+          }
+          return Center(child: CircularProgressIndicator());
+        },
+      );
     }
-    return items;
   }
 
   @override
@@ -171,17 +252,7 @@ class _ChoiceCardState extends State<ChoiceCard> {
         child: Column(
           children: [
             _buildChoiceRow(),
-            FutureBuilder<Widget>(
-              future: _futureWidget,
-              builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  return snapshot.data;
-                } else if (snapshot.hasError) {
-                  return Center(child: Text("${snapshot.error}"));
-                }
-                return Center(child: CircularProgressIndicator());
-              },
-            ),
+            _buildList(),
           ],
         ),
       ),

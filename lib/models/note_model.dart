@@ -62,7 +62,6 @@ Future<List<Note>> fetchAllNotes(String token) async {
     Iterable list = jsonDecode(utf8.decode(response.bodyBytes));
     return list.map((model) => Note.fromJson(model)).toList();
   } else {
-    if (response.statusCode == 404) return [];
     throw Exception('Failure fetching notes');
   }
 }

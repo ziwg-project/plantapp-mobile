@@ -79,7 +79,6 @@ Future<List<Reminder>> fetchAllReminders(String token) async {
     Iterable list = jsonDecode(utf8.decode(response.bodyBytes));
     return list.map((model) => Reminder.fromJson(model)).toList();
   } else {
-    if (response.statusCode == 404) return [];
     throw Exception('Failure fetching reminders');
   }
 }

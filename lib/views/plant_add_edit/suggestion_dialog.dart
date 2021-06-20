@@ -13,13 +13,17 @@ class SuggestionDialog extends StatefulWidget {
 
 class _SuggestionDialogState extends State<SuggestionDialog> {
   String photoPath;
-  Future<Widget> _futureWidget;
+  Future<List<Suggestion>> _futureSuggestions;
   _SuggestionDialogState(this.photoPath);
 
   @override
   void initState() {
     super.initState();
-    _futureWidget = _buildList();
+    _futureSuggestions = _getData();
+  }
+
+  Future<List<Suggestion>> _getData() async {
+    return fetchSuggestions(photoPath, await getToken());
   }
 
   Widget _buildItem(Suggestion suggestion) {
@@ -78,9 +82,7 @@ class _SuggestionDialogState extends State<SuggestionDialog> {
     );
   }
 
-  Future<Widget> _buildList() async {
-    String token = await getToken();
-    List<Suggestion> suggestions = await fetchSuggestions(photoPath, token);
+  Widget _buildList(List<Suggestion> suggestions) {
     if (suggestions.isNotEmpty) {
       return Container(
         height: 400,
@@ -110,27 +112,6 @@ class _SuggestionDialogState extends State<SuggestionDialog> {
     );
   }
 
-  Widget _buildWidgets() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      mainAxisSize: MainAxisSize.min,
-      children: <Widget>[
-        FutureBuilder<Widget>(
-          future: _futureWidget,
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              return snapshot.data;
-            } else if (snapshot.hasError) {
-              return Text("${snapshot.error}");
-            }
-            return Center(child: CircularProgressIndicator());
-          },
-        ),
-        Container(child: _buildButtons(context)),
-      ],
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return SimpleDialog(
@@ -138,7 +119,24 @@ class _SuggestionDialogState extends State<SuggestionDialog> {
       children: <Widget>[
         Container(
           width: double.maxFinite,
-          child: _buildWidgets(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              FutureBuilder<List<Suggestion>>(
+                future: _futureSuggestions,
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    return _buildList(snapshot.data);
+                  } else if (snapshot.hasError) {
+                    return Text("${snapshot.error}");
+                  }
+                  return Center(child: CircularProgressIndicator());
+                },
+              ),
+              Container(child: _buildButtons(context)),
+            ],
+          ),
         ),
       ],
     );

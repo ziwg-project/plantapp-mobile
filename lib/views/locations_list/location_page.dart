@@ -17,22 +17,24 @@ class LocationPage extends StatefulWidget {
 class _LocationPageState extends State<LocationPage> {
   bool fromList;
   List<Widget> items = [];
-  Future<List<Widget>> _futureWidgets;
+  Future<List<Location>> _futureLocations;
 
   _LocationPageState(this.fromList);
 
   @override
   void initState() {
     super.initState();
-    _futureWidgets = _buildItems();
+    _futureLocations = _getData();
   }
 
-  Future<List<Widget>> _buildItems() async {
-    List<Widget> items = [];
+  Future<List<Location>> _getData() async {
     String token = await getToken();
-    List<Location> locations = await fetchAllLocations(token);
-    List<List<Widget>> specificLocations =
-        await _buildSpecificLocations(locations);
+    return await fetchAllLocations(token);
+  }
+
+  Widget _buildItems(List<Location> locations) {
+    List<Widget> items = [];
+    List<List<Widget>> specificLocations = _buildSpecificLocations(locations);
     for (int i = 0; i < 2; i++) {
       items.add(
         Card(
@@ -50,11 +52,15 @@ class _LocationPageState extends State<LocationPage> {
         ),
       );
     }
-    return items;
+    return ListView.builder(
+      itemCount: items.length,
+      itemBuilder: (context, index) {
+        return items[index];
+      },
+    );
   }
 
-  Future<List<List<Widget>>> _buildSpecificLocations(
-      List<Location> locations) async {
+  List<List<Widget>> _buildSpecificLocations(List<Location> locations) {
     List<Widget> inside = [];
     List<Widget> outside = [];
     for (int i = 0; i < locations.length; i++) {
@@ -159,7 +165,7 @@ class _LocationPageState extends State<LocationPage> {
       String token = await getToken();
       await deleteLocation(token, location.id.toString()).then((value) {
         setState(() {
-          _futureWidgets = _buildItems();
+          _futureLocations = _getData();
         });
       });
     }
@@ -176,7 +182,7 @@ class _LocationPageState extends State<LocationPage> {
       String token = await getToken();
       await updateLocation(token, location).then((value) {
         setState(() {
-          _futureWidgets = _buildItems();
+          _futureLocations = _getData();
         });
       });
     }
@@ -187,7 +193,7 @@ class _LocationPageState extends State<LocationPage> {
         context: context,
         builder: (context) => AddLocationDialog()).then((value) {
       setState(() {
-        _futureWidgets = _buildItems();
+        _futureLocations = _getData();
       });
     });
   }
@@ -205,16 +211,11 @@ class _LocationPageState extends State<LocationPage> {
         },
       ),
       body: Container(
-        child: FutureBuilder<List<Widget>>(
-          future: _futureWidgets,
+        child: FutureBuilder<List<Location>>(
+          future: _futureLocations,
           builder: (context, snapshot) {
             if (snapshot.hasData) {
-              return ListView.builder(
-                itemCount: snapshot.data.length,
-                itemBuilder: (context, index) {
-                  return snapshot.data[index];
-                },
-              );
+              return _buildItems(snapshot.data);
             } else if (snapshot.hasError) {
               return Text("${snapshot.error}");
             }

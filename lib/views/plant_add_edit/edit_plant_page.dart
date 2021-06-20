@@ -27,13 +27,25 @@ class _EditPlantPageState extends State<EditPlantPage> {
   bool changingPhoto = false;
   Plant plant;
   Suggestion suggestion;
-  Future<Widget> _futureWidget;
+  Future<Plant> _futurePlant;
+  Future<String> _futureText;
   _EditPlantPageState(this.plantId);
 
   @override
   void initState() {
     super.initState();
-    _futureWidget = _buildForm();
+    _futurePlant = _getPlant();
+    _futureText = _getLocationText();
+  }
+
+  Future<Plant> _getPlant() async {
+    return fetchPlant(await getToken(), plantId.toString());
+  }
+
+  Future<String> _getLocationText() async {
+    return (await fetchLocation(
+            await getToken(), (await _futurePlant).locFk.toString()))
+        .name;
   }
 
   @override
@@ -58,11 +70,8 @@ class _EditPlantPageState extends State<EditPlantPage> {
     }
   }
 
-  Future<Widget> _buildForm() async {
+  Widget _buildForm() {
     if (initialising) {
-      String token = await getToken();
-      plant = await fetchPlant(token, plantId.toString());
-      locationText = (await fetchLocation(token, plant.locFk.toString())).name;
       nameController.text = plant.name;
       sciNameController.text = plant.sciName == null ? '' : plant.sciName;
       initialising = false;
@@ -77,7 +86,18 @@ class _EditPlantPageState extends State<EditPlantPage> {
           ),
           _buildNameField(),
           _buildScientificNameField(),
-          _buildLocationField(),
+          FutureBuilder<String>(
+            future: _futureText,
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                if (locationText == null) locationText = snapshot.data;
+                return _buildLocationField();
+              } else if (snapshot.hasError) {
+                return Center(child: Text("${snapshot.error}"));
+              }
+              return Center(child: CircularProgressIndicator());
+            },
+          ),
         ],
       ),
     );
@@ -159,7 +179,6 @@ class _EditPlantPageState extends State<EditPlantPage> {
       setState(() {
         locationText = result[0];
         plant.locFk = result[1];
-        _futureWidget = _buildForm();
       });
     }
   }
@@ -210,11 +229,12 @@ class _EditPlantPageState extends State<EditPlantPage> {
           ),
         ],
       ),
-      body: FutureBuilder<Widget>(
-        future: _futureWidget,
+      body: FutureBuilder<Plant>(
+        future: _futurePlant,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            return snapshot.data;
+            plant = snapshot.data;
+            return _buildForm();
           } else if (snapshot.hasError) {
             return Center(child: Text("${snapshot.error}"));
           }

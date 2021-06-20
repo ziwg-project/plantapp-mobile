@@ -14,25 +14,30 @@ class PlantsListPage extends StatefulWidget {
 }
 
 class _PlantsListPageState extends State<PlantsListPage> {
-  List<Plant> plants = [];
-  Future<List<Widget>> _futureWidgets;
+  Future<List<Location>> _futureLocations;
+  Future<List<Plant>> _futurePlants;
 
   @override
   void initState() {
     super.initState();
-    getToken().then((value) => {
-          fetchAllPlants(value, query: '').then((response) {
-            plants = response;
-          })
-        });
-    _futureWidgets = _buildWidgets();
+    _futureLocations = _getLocations();
+    _futurePlants = _getPlants('');
+  }
+
+  Future<List<Location>> _getLocations() async {
+    return fetchAllLocations(await getToken());
+  }
+
+  Future<List<Plant>> _getPlants(String query) async {
+    return fetchAllPlants(await getToken(), query: query);
   }
 
   final searchForm = FormGroup({
     'name': FormControl<String>(value: ''),
   });
 
-  List<List<Widget>> _buildSpecificLocations(List<Location> locations) {
+  List<List<Widget>> _buildSpecificLocations(
+      List<Location> locations, List<Plant> plants) {
     List<Widget> inside = [];
     List<Widget> outside = [];
     for (int i = 0; i < locations.length; i++) {
@@ -77,23 +82,16 @@ class _PlantsListPageState extends State<PlantsListPage> {
 
   callback() {
     setState(() {
-      getToken().then((value) => {
-            fetchAllPlants(value, query: '').then((response) {
-              plants = response;
-            })
-          });
-      searchForm.control('name').value = '';
-      _futureWidgets = _buildWidgets();
+      _futureLocations = _getLocations();
+      _futurePlants = _getPlants(this.searchForm.control('name').value);
     });
   }
 
   onSearchSubmit() async {
     String token = await getToken();
-    var response = await fetchAllPlants(token,
-        query: this.searchForm.control('name').value);
     this.setState(() {
-      plants = response;
-      _futureWidgets = _buildWidgets();
+      _futurePlants =
+          fetchAllPlants(token, query: this.searchForm.control('name').value);
     });
   }
 
@@ -108,53 +106,63 @@ class _PlantsListPageState extends State<PlantsListPage> {
     return list;
   }
 
-  Future<List<Widget>> _buildWidgets() async {
-    String token = await getToken();
-    List<Widget> items = [];
-    List<Location> locations = await fetchAllLocations(token);
-    if (plants.isEmpty) {
-      plants = await fetchAllPlants(token,
-          query: this.searchForm.control('name').value);
-    }
-    List<List<Widget>> specificLocations = _buildSpecificLocations(locations);
-    items.add(ReactiveForm(
-        formGroup: this.searchForm,
-        child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 5),
-            child: Center(
-                child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                ReactiveForm(
-                    formGroup: this.searchForm,
-                    child: ReactiveTextField<String>(
-                        formControlName: 'name',
-                        onSubmitted: onSearchSubmit,
-                        decoration: const InputDecoration(
-                          suffixIcon: Icon(Icons.search),
-                          labelText: 'Plant name',
-                          helperStyle: TextStyle(height: 0.7),
-                          errorStyle: TextStyle(height: 0.7),
-                        ))),
-                const SizedBox(height: 20.0),
-              ],
-            )))));
-    for (int i = 0; i < 2; i++) {
-      items.add(
-        Card(
-          child: ExpansionTile(
-            title: Text(i == 0 ? 'Inside' : 'Outside',
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                )),
-            initiallyExpanded: true,
-            children: specificLocations[i],
-          ),
-        ),
-      );
-    }
-    return items;
+  Widget _buildWidgets(List<Location> locations) {
+    return FutureBuilder<List<Plant>>(
+      future: _futurePlants,
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          List<Widget> items = [];
+          List<List<Widget>> specificLocations =
+              _buildSpecificLocations(locations, snapshot.data);
+          items.add(ReactiveForm(
+              formGroup: this.searchForm,
+              child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 5),
+                  child: Center(
+                      child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      ReactiveForm(
+                          formGroup: this.searchForm,
+                          child: ReactiveTextField<String>(
+                              formControlName: 'name',
+                              onSubmitted: onSearchSubmit,
+                              decoration: const InputDecoration(
+                                suffixIcon: Icon(Icons.search),
+                                labelText: 'Plant name',
+                                helperStyle: TextStyle(height: 0.7),
+                                errorStyle: TextStyle(height: 0.7),
+                              ))),
+                      const SizedBox(height: 20.0),
+                    ],
+                  )))));
+          for (int i = 0; i < 2; i++) {
+            items.add(
+              Card(
+                child: ExpansionTile(
+                  title: Text(i == 0 ? 'Inside' : 'Outside',
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      )),
+                  initiallyExpanded: true,
+                  children: specificLocations[i],
+                ),
+              ),
+            );
+          }
+          return ListView.builder(
+            itemCount: items.length,
+            itemBuilder: (context, index) {
+              return items[index];
+            },
+          );
+        } else if (snapshot.hasError) {
+          return Text("${snapshot.error}");
+        }
+        return Center(child: CircularProgressIndicator());
+      },
+    );
   }
 
   @override
@@ -176,12 +184,8 @@ class _PlantsListPageState extends State<PlantsListPage> {
                 ),
               ).then((value) {
                 setState(() {
-                  getToken().then((value) => {
-                        fetchAllPlants(value, query: '').then((response) {
-                          plants = response;
-                        })
-                      });
-                  _futureWidgets = _buildWidgets();
+                  _futureLocations = _getLocations();
+                  _futurePlants = _getPlants('');
                 });
               });
             },
@@ -190,16 +194,11 @@ class _PlantsListPageState extends State<PlantsListPage> {
       ),
       drawer: DrawerNavigation(),
       body: Container(
-        child: FutureBuilder<List<Widget>>(
-          future: _futureWidgets,
+        child: FutureBuilder<List<Location>>(
+          future: _futureLocations,
           builder: (context, snapshot) {
             if (snapshot.hasData) {
-              return ListView.builder(
-                itemCount: snapshot.data.length,
-                itemBuilder: (context, index) {
-                  return snapshot.data[index];
-                },
-              );
+              return _buildWidgets(snapshot.data);
             } else if (snapshot.hasError) {
               return Text("${snapshot.error}");
             }
