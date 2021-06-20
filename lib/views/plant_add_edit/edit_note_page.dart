@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:plants_app/models/note_model.dart';
+import 'package:reactive_forms/reactive_forms.dart';
 import '../../utils.dart';
 
 class EditNotePage extends StatefulWidget {
@@ -12,17 +13,30 @@ class EditNotePage extends StatefulWidget {
 }
 
 class _EditNotePageState extends State<EditNotePage> {
-  final _formKey = GlobalKey<FormState>();
   Note note;
+  final form = FormGroup({
+    'text': FormControl<String>(value: '', validators: [Validators.required]),
+  });
 
   _EditNotePageState(this.note);
+
+  @override
+  void initState() {
+    super.initState();
+    form.control('text').value = note.text;
+  }
 
   Widget _buildField() {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       child: Padding(
         padding: const EdgeInsets.all(20.0),
-        child: TextFormField(
+        child: ReactiveTextField<String>(
+          formControlName: 'text',
+          validationMessages: (control) => {
+            ValidationMessage.required: 'Please enter some words',
+          },
+          textInputAction: TextInputAction.done,
           keyboardType: TextInputType.multiline,
           maxLines: 20,
           minLines: 1,
@@ -31,14 +45,6 @@ class _EditNotePageState extends State<EditNotePage> {
             icon: Icon(Icons.eco),
             labelText: 'Note',
           ),
-          initialValue: note.text,
-          validator: (value) {
-            if (value.isEmpty) {
-              return 'Please enter some words';
-            }
-            note.text = value;
-            return null;
-          },
         ),
       ),
     );
@@ -46,6 +52,7 @@ class _EditNotePageState extends State<EditNotePage> {
 
   _sendData() async {
     String token = await getToken();
+    note.text = form.control('text').value;
     await updateNote(token, note);
   }
 
@@ -61,21 +68,21 @@ class _EditNotePageState extends State<EditNotePage> {
               size: 30.0,
             ),
             onPressed: () {
-              if (_formKey.currentState.validate()) {
+              if (form.valid) {
                 _sendData();
-                Navigator.pop(context, note);
+                Navigator.pop(context);
+              } else {
+                form.markAllAsTouched();
               }
             },
           ),
         ],
       ),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          children: <Widget>[
-            _buildField(),
-          ],
-        ),
+      body: ReactiveForm(
+        formGroup: form,
+        child: ListView(children: <Widget>[
+          _buildField(),
+        ]),
       ),
     );
   }

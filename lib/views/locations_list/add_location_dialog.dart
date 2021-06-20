@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:plants_app/models/location_model.dart';
 import 'package:plants_app/utils.dart';
+import 'package:reactive_forms/reactive_forms.dart';
 
 class AddLocationDialog extends StatefulWidget {
   @override
@@ -8,35 +9,29 @@ class AddLocationDialog extends StatefulWidget {
 }
 
 class _AddLocationDialogState extends State<AddLocationDialog> {
-  final _formKey = GlobalKey<FormState>();
-  String _mainLocation;
-  String _locationName;
+  final form = FormGroup({
+    'main_location': FormControl<String>(validators: [Validators.required]),
+    'location':
+        FormControl<String>(value: '', validators: [Validators.required]),
+  });
 
   Widget _buildDropdown() {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       child: Padding(
         padding: const EdgeInsets.all(20.0),
-        child: DropdownButtonFormField(
-          hint: const Text("Choose main location"),
-          value: _mainLocation,
-          onChanged: (String value) {
-            setState(() {
-              _mainLocation = value;
-            });
+        child: ReactiveDropdownField(
+          formControlName: 'main_location',
+          validationMessages: (control) => {
+            ValidationMessage.required: 'Choose main location',
           },
+          hint: const Text("Choose main location"),
           items: const <String>['Inside', 'Outside'].map((String value) {
             return DropdownMenuItem<String>(
               value: value,
               child: Text(value),
             );
           }).toList(),
-          validator: (_mainLocation) {
-            if (_mainLocation == null) {
-              return 'Please choose a main location';
-            }
-            return null;
-          },
         ),
       ),
     );
@@ -47,19 +42,15 @@ class _AddLocationDialogState extends State<AddLocationDialog> {
       margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       child: Padding(
         padding: const EdgeInsets.all(20.0),
-        child: TextFormField(
+        child: ReactiveTextField<String>(
+          formControlName: 'location',
+          validationMessages: (control) => {
+            ValidationMessage.required: 'Please enter location name',
+          },
+          textInputAction: TextInputAction.done,
           decoration: const InputDecoration(
             labelText: 'Name',
           ),
-          validator: (value) {
-            if (value.isEmpty) {
-              return 'Please enter location name';
-            }
-            return null;
-          },
-          onChanged: (String value) {
-            _locationName = value;
-          },
         ),
       ),
     );
@@ -68,8 +59,9 @@ class _AddLocationDialogState extends State<AddLocationDialog> {
   _sendData() async {
     String token = await getToken();
     Location location = new Location();
-    location.name = _locationName;
-    location.type = _mainLocation == 'Outside' ? 'O' : 'I';
+    location.name = form.control('location').value;
+    location.type =
+        form.control('main_location').value == 'Outside' ? 'O' : 'I';
     await createLocation(token, location);
   }
 
@@ -85,9 +77,14 @@ class _AddLocationDialogState extends State<AddLocationDialog> {
         ),
         TextButton(
           onPressed: () {
-            if (_formKey.currentState.validate()) {
+            if (form.valid) {
               _sendData();
-              Navigator.pop(context, [_mainLocation, _locationName]);
+              Navigator.pop(context, [
+                form.control('main_location').value,
+                form.control('location').value
+              ]);
+            } else {
+              form.markAllAsTouched();
             }
           },
           child: const Text('Add'),
@@ -101,16 +98,15 @@ class _AddLocationDialogState extends State<AddLocationDialog> {
     return SimpleDialog(
       title: const Text('Add location'),
       children: <Widget>[
-        Form(
-          key: _formKey,
+        ReactiveForm(
+          formGroup: form,
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              _buildDropdown(),
-              _buildNameField(),
-              _buildButtons(context),
-            ],
-          ),
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                _buildDropdown(),
+                _buildNameField(),
+                _buildButtons(context),
+              ]),
         ),
       ],
     );
