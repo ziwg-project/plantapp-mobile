@@ -65,6 +65,9 @@ Future<List<Location>> fetchAllLocations(String token) async {
     Iterable list = jsonDecode(utf8.decode(response.bodyBytes));
     return list.map((model) => Location.fromJson(model)).toList();
   } else {
+    if (response.statusCode == 404) {
+      return [];
+    }
     throw Exception('Failure fetching locations');
   }
 }

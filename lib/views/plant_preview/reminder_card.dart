@@ -5,6 +5,7 @@ import 'package:plants_app/views/delete_dialog.dart';
 import 'package:plants_app/views/plant_add_edit/edit_reminder_page.dart';
 import 'package:plants_app/views/plant_preview/log_dialog.dart';
 import 'package:plants_app/views/plant_preview/reminder_change_dialog.dart';
+import 'package:plants_app/views/plant_preview/skip_dialog.dart';
 import '../../utils.dart';
 
 class ReminderCard extends StatefulWidget {
@@ -110,6 +111,18 @@ class _ReminderCardState extends State<ReminderCard> {
           value: 1,
           child: Row(
             children: <Widget>[
+              Icon(Icons.cancel_outlined),
+              const SizedBox(
+                width: 5,
+              ),
+              const Text('Skip'),
+            ],
+          ),
+        ),
+        PopupMenuItem(
+          value: 2,
+          child: Row(
+            children: <Widget>[
               Icon(Icons.edit),
               const SizedBox(
                 width: 5,
@@ -119,7 +132,7 @@ class _ReminderCardState extends State<ReminderCard> {
           ),
         ),
         PopupMenuItem(
-          value: 2,
+          value: 3,
           child: Row(
             children: <Widget>[
               Icon(Icons.delete),
@@ -135,10 +148,12 @@ class _ReminderCardState extends State<ReminderCard> {
       (value) {
         if (value != null) {
           value == 0
-              ? _logAction(context)
+              ? _logDoneAction(context)
               : value == 1
-                  ? _editReminder(context)
-                  : _askedToDelete(context);
+                  ? _logSkippedAction(context)
+                  : value == 2
+                      ? _editReminder(context)
+                      : _askedToDelete(context);
         }
       },
     );
@@ -164,7 +179,18 @@ class _ReminderCardState extends State<ReminderCard> {
     widget.notifyParent();
   }
 
-  void _logAction(BuildContext context) async {
+  void _logSkippedAction(BuildContext context) async {
+    final result =
+        await showDialog(context: context, builder: (context) => SkipDialog());
+    if (result != null && result) {
+      String token = await getToken();
+      ReminderLog reminderLog = new ReminderLog(
+          logType: 'S', logTmstp: DateTime.now(), reminderFk: reminder.id);
+      await createLog(token, reminderLog);
+    }
+  }
+
+  void _logDoneAction(BuildContext context) async {
     final result =
         await showDialog(context: context, builder: (context) => LogDialog());
     if (result != null && result) {

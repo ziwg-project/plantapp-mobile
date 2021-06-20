@@ -72,6 +72,9 @@ Future<List<Plant>> fetchAllPlants(String token, {String query = ""}) async {
     Iterable list = jsonDecode(utf8.decode(response.bodyBytes));
     return list.map((model) => Plant.fromJson(model)).toList();
   } else {
+    if (response.statusCode == 404) {
+      return [];
+    }
     throw Exception('Failure fetching locations');
   }
 }

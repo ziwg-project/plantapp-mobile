@@ -212,7 +212,8 @@ class _ChoiceCardState extends State<ChoiceCard> {
                     if (ids.contains(log.reminderFk))
                       items.add(LogCard(
                         log: log,
-                        text: reminderTexts[ids.indexOf(log.reminderFk)],
+                        text: reminderTexts[ids.indexOf(log.reminderFk)] +
+                            (log.logType == 'S' ? ' - Skipped' : ' - Done'),
                         key: UniqueKey(),
                       ));
                   });
