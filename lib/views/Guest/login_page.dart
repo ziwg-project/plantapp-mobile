@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:plants_app/models/AuthModel.dart';
 import 'package:plants_app/services/authApiService.dart';
@@ -85,12 +86,11 @@ class _LoginPageState extends State<LoginPage> {
                                       horizontal: 50, vertical: 15))),
                           onPressed: () {
                             if (form.valid) {
-                              AuthApiService.signIn(form.value, this.context, auth);
+                              AuthApiService.signIn(form.value, this.context, auth,auth.firebaseToken);
                               form.resetState({
                                 'username': ControlState<String>(value: null),
                                 'password': ControlState<String>(value: null),
                               }, removeFocus: true);
-                              
                             } else {
                               form.markAllAsTouched();
                             }
