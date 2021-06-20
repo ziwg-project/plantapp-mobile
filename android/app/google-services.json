@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "303712739860",
+    "project_id": "ziwg-21969",
+    "storage_bucket": "ziwg-21969.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:303712739860:android:575c04fd492794d0af7d01",
+        "android_client_info": {
+          "package_name": "com.example.plants_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "303712739860-03gk06la3l8aoh15nuu0085t75eu8dbp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBr9NMpbPzZO3JKtpHn21fWcchVljknXQ4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "303712739860-03gk06la3l8aoh15nuu0085t75eu8dbp.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

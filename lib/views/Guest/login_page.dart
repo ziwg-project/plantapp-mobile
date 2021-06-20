@@ -1,3 +1,6 @@
+import 'dart:developer';
+
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:plants_app/models/AuthModel.dart';
 import 'package:plants_app/services/authApiService.dart';
@@ -11,6 +14,7 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
   FormGroup buildForm() => fb.group(<String, dynamic>{
         'username': ['', Validators.required],
         'password': ['', Validators.required],
@@ -85,12 +89,11 @@ class _LoginPageState extends State<LoginPage> {
                                       horizontal: 50, vertical: 15))),
                           onPressed: () {
                             if (form.valid) {
-                              AuthApiService.signIn(form.value, this.context, auth);
+                              AuthApiService.signIn(form.value, this.context, auth,auth.firebaseToken);
                               form.resetState({
                                 'username': ControlState<String>(value: null),
                                 'password': ControlState<String>(value: null),
                               }, removeFocus: true);
-                              
                             } else {
                               form.markAllAsTouched();
                             }

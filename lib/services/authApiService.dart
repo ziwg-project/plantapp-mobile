@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -13,6 +14,29 @@ class TokenKey {
   TokenKey.fromJson(Map<String, dynamic> json) : token = json['key'];
   Map<String, dynamic> toJson() => {
         'key': token,
+      };
+}
+
+// {
+//     "name": "",
+//     "registration_id": "asdasd",
+//     "device_id": "",
+//     "active": true,
+//     "type": "android"
+// }
+class FirebaseDevice {
+  final String name = "";
+  final String registrationid;
+  final String deviceid = "";
+  final bool active = true;
+  final String type = 'android';
+  FirebaseDevice(this.registrationid);
+  Map<String, dynamic> toJson() => {
+        'name': name,
+        'registration_id': registrationid,
+        'device_id': deviceid,
+        'active': active,
+        'type': type,
       };
 }
 
@@ -38,7 +62,21 @@ class AuthApiService {
     }
   }
 
-  static void signIn(credentials, context, AuthModel authService) async {
+  static void registerDevice(firebaseToken, apiToken) async {
+    log(apiToken);
+    var payload = FirebaseDevice(firebaseToken);
+    final response =
+        await http.post(Uri.parse("https://plantapp.irezwi.pl/api/devices/"),
+            headers: <String, String>{
+              'Content-Type': 'application/json; charset=UTF-8',
+              'Authorization': 'Token ' + apiToken
+            },
+            body: jsonEncode(payload));
+    log(response.body);
+  }
+
+  static void signIn(
+      credentials, context, AuthModel authService, firebaseToken) async {
     final response =
         await http.post(Uri.parse("https://plantapp.irezwi.pl/api/auth/login/"),
             headers: <String, String>{
@@ -49,12 +87,12 @@ class AuthApiService {
       Map<String, dynamic> responseMap = jsonDecode(response.body);
       var responseBody = TokenKey.fromJson(responseMap);
       authService.logIn(responseBody.token);
-      ScaffoldMessenger.of(context).showSnackBar(new SnackBar(
-          content:
-              new Text("You're now logged in")));
+      registerDevice(firebaseToken, responseBody.token);
+      ScaffoldMessenger.of(context).showSnackBar(
+          new SnackBar(content: new Text("You're now logged in")));
     } else {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(new SnackBar(content: new Text("Username/ password incorrect")));
+      ScaffoldMessenger.of(context).showSnackBar(
+          new SnackBar(content: new Text("Username/ password incorrect")));
     }
   }
 }
