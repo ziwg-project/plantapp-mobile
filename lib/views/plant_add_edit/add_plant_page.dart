@@ -7,6 +7,7 @@ import 'package:plants_app/models/suggestion_model.dart';
 import 'package:plants_app/views/locations_list/location_page.dart';
 import 'package:plants_app/views/plant_add_edit/photo_card.dart';
 import 'package:plants_app/views/plant_add_edit/suggestion_dialog.dart';
+import 'package:reactive_forms/reactive_forms.dart';
 import '../../utils.dart';
 
 class AddPlantPage extends StatefulWidget {
@@ -19,19 +20,17 @@ class AddPlantPage extends StatefulWidget {
 }
 
 class _AddPlantPageState extends State<AddPlantPage> {
-  final _formKey = GlobalKey<FormState>();
-  String locationText;
   Plant plant = new Plant();
-  final nameController = TextEditingController();
-  final sciNameController = TextEditingController();
   Suggestion suggestion;
-
-  @override
-  void dispose() {
-    nameController.dispose();
-    sciNameController.dispose();
-    super.dispose();
-  }
+  final form = FormGroup({
+    'name': FormControl<String>(value: '', validators: [Validators.required]),
+    'sci_name': FormControl<String>(value: ''),
+    'location_text': FormControl<String>(
+      value: '',
+      validators: [Validators.required],
+      disabled: true,
+    ),
+  });
 
   callback(String photoPath) async {
     plant.image = photoPath;
@@ -41,24 +40,10 @@ class _AddPlantPageState extends State<AddPlantPage> {
     if (result != null) {
       suggestion = result;
       if (suggestion.plantName.isNotEmpty)
-        nameController.text = suggestion.plantName;
+        form.control('name').value = suggestion.plantName;
       if (suggestion.scientificName != null)
-        sciNameController.text = suggestion.scientificName;
+        form.control('sci_name').value = suggestion.scientificName;
     }
-  }
-
-  Widget _buildForm() {
-    return Form(
-      key: _formKey,
-      child: ListView(
-        children: <Widget>[
-          PhotoCard(notifyParent: callback),
-          _buildNameField(),
-          _buildScientificNameField(),
-          _buildLocationField(),
-        ],
-      ),
-    );
   }
 
   Widget _buildNameField() {
@@ -66,19 +51,16 @@ class _AddPlantPageState extends State<AddPlantPage> {
       margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       child: Padding(
         padding: const EdgeInsets.all(20.0),
-        child: TextFormField(
+        child: ReactiveTextField<String>(
+          formControlName: 'name',
+          validationMessages: (control) => {
+            ValidationMessage.required: 'Please enter plant name',
+          },
+          textInputAction: TextInputAction.next,
           decoration: const InputDecoration(
             icon: Icon(Icons.eco),
             labelText: 'Name',
           ),
-          controller: nameController,
-          validator: (value) {
-            if (value.isEmpty) {
-              return 'Please enter plant name';
-            }
-            plant.name = value;
-            return null;
-          },
         ),
       ),
     );
@@ -89,18 +71,13 @@ class _AddPlantPageState extends State<AddPlantPage> {
       margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       child: Padding(
         padding: const EdgeInsets.all(20.0),
-        child: TextFormField(
+        child: ReactiveTextField<String>(
+          formControlName: 'sci_name',
+          textInputAction: TextInputAction.done,
           decoration: const InputDecoration(
             icon: Icon(Icons.eco_outlined),
             labelText: 'Scientific name',
           ),
-          controller: sciNameController,
-          validator: (value) {
-            if (value.isNotEmpty) {
-              plant.sciName = value;
-            }
-            return null;
-          },
         ),
       ),
     );
@@ -115,24 +92,28 @@ class _AddPlantPageState extends State<AddPlantPage> {
         margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         child: Padding(
           padding: const EdgeInsets.all(20.0),
-          child: TextFormField(
+          child: ReactiveTextField<String>(
+            formControlName: 'location_text',
+            validationMessages: (control) => {
+              ValidationMessage.required: 'Please choose a location',
+            },
+            onTap: () {
+              _locationChoicePage(context);
+            },
             decoration: InputDecoration(
               icon: const Icon(Icons.location_on),
-              labelText: locationText == null ? 'Location' : locationText,
-              labelStyle: locationText == null
+              labelText: form.control('location_text').value == null ||
+                      form.control('location_text').value == ''
+                  ? 'Location'
+                  : form.control('location_text').value,
+              labelStyle: form.control('location_text').value == null ||
+                      form.control('location_text').value == ''
                   ? TextStyle(color: Colors.black54)
                   : TextStyle(color: Colors.black),
               errorStyle: TextStyle(
                 color: Theme.of(context).errorColor,
               ),
             ),
-            enabled: false,
-            validator: (value) {
-              if (locationText == null) {
-                return 'Please choose a location';
-              }
-              return null;
-            },
           ),
         ),
       ),
@@ -147,15 +128,18 @@ class _AddPlantPageState extends State<AddPlantPage> {
                   fromList: false,
                 )));
     if (result != null) {
-      setState(() {
-        locationText = result[0];
-        plant.locFk = result[1];
-      });
+      form.control('location_text').value = result[0];
+      form.control('location_text').markAsDisabled();
+      plant.locFk = result[1];
+    } else {
+      FocusManager.instance.primaryFocus?.unfocus();
     }
   }
 
   Future<void> sendData() async {
     String token = await getToken();
+    plant.name = form.control('name').value;
+    plant.sciName = form.control('sci_name').value;
     final response = await createPlant(token, plant);
     if (response.statusCode == 201 && suggestion != null) {
       final responseString = await response.stream.bytesToString();
@@ -196,17 +180,30 @@ class _AddPlantPageState extends State<AddPlantPage> {
               size: 30.0,
             ),
             onPressed: () async {
-              if (_formKey.currentState.validate()) {
+              form.control('location_text').markAsEnabled();
+              if (form.valid) {
                 await sendData().then((value) {
                   widget.notifyParent();
                   Navigator.pop(context);
                 });
+              } else {
+                form.markAllAsTouched();
               }
             },
           ),
         ],
       ),
-      body: _buildForm(),
+      body: ReactiveForm(
+        formGroup: form,
+        child: ListView(
+          children: <Widget>[
+            PhotoCard(notifyParent: callback),
+            _buildNameField(),
+            _buildScientificNameField(),
+            _buildLocationField(),
+          ],
+        ),
+      ),
     );
   }
 }

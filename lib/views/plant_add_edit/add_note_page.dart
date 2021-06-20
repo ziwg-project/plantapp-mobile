@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:plants_app/models/note_model.dart';
 import '../../utils.dart';
+import 'package:reactive_forms/reactive_forms.dart';
 
 class AddNotePage extends StatefulWidget {
   final int plantId;
@@ -11,9 +12,10 @@ class AddNotePage extends StatefulWidget {
 }
 
 class _AddNotePageState extends State<AddNotePage> {
-  final _formKey = GlobalKey<FormState>();
   int plantId;
-  String _noteText;
+  final form = FormGroup({
+    'text': FormControl<String>(value: '', validators: [Validators.required]),
+  });
 
   _AddNotePageState(this.plantId);
 
@@ -22,22 +24,20 @@ class _AddNotePageState extends State<AddNotePage> {
       margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       child: Padding(
         padding: const EdgeInsets.all(20.0),
-        child: TextFormField(
-          keyboardType: TextInputType.multiline,
-          maxLines: 20,
-          minLines: 1,
-          maxLength: 1000,
+        child: ReactiveTextField<String>(
+          formControlName: 'text',
+          validationMessages: (control) => {
+            ValidationMessage.required: 'Please enter some words',
+          },
+          textInputAction: TextInputAction.done,
           decoration: const InputDecoration(
             icon: Icon(Icons.eco),
             labelText: 'Note',
           ),
-          validator: (value) {
-            if (value.isEmpty) {
-              return 'Please enter some words';
-            }
-            _noteText = value;
-            return null;
-          },
+          keyboardType: TextInputType.multiline,
+          maxLines: 20,
+          minLines: 1,
+          maxLength: 1000,
         ),
       ),
     );
@@ -46,7 +46,7 @@ class _AddNotePageState extends State<AddNotePage> {
   _sendData() async {
     String token = await getToken();
     Note note = new Note();
-    note.text = _noteText;
+    note.text = form.control('text').value;
     note.plantFk = plantId;
     await createNote(token, note);
   }
@@ -63,21 +63,21 @@ class _AddNotePageState extends State<AddNotePage> {
               size: 30.0,
             ),
             onPressed: () {
-              if (_formKey.currentState.validate()) {
+              if (form.valid) {
                 _sendData();
                 Navigator.pop(context);
+              } else {
+                form.markAllAsTouched();
               }
             },
           ),
         ],
       ),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          children: <Widget>[
-            _buildField(),
-          ],
-        ),
+      body: ReactiveForm(
+        formGroup: form,
+        child: ListView(children: <Widget>[
+          _buildField(),
+        ]),
       ),
     );
   }

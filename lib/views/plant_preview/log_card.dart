@@ -43,7 +43,7 @@ class _LogCardState extends State<LogCard> {
         mainAxisAlignment: MainAxisAlignment.start,
         children: <Widget>[
           Text(
-            DateFormat("dd-MM-yyyy hh:mm").format(log.logTmstp),
+            DateFormat("dd-MM-yyyy hh:mm a").format(log.logTmstp),
             style: const TextStyle(fontSize: 15),
           ),
         ],

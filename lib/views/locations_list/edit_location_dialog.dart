@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:plants_app/models/location_model.dart';
+import 'package:reactive_forms/reactive_forms.dart';
 
 class EditLocationDialog extends StatefulWidget {
   final Location location;
@@ -11,24 +12,34 @@ class EditLocationDialog extends StatefulWidget {
 }
 
 class _EditLocationDialogState extends State<EditLocationDialog> {
-  final _formKey = GlobalKey<FormState>();
+  final form = FormGroup({
+    'main_location': FormControl<String>(validators: [Validators.required]),
+    'location':
+        FormControl<String>(value: '', validators: [Validators.required]),
+  });
   final Location location;
 
   _EditLocationDialogState(this.location);
+
+  @override
+  void initState() {
+    super.initState();
+    form.control('main_location').value =
+        location.type == 'I' ? 'Inside' : 'Outside';
+    form.control('location').value = location.name;
+  }
 
   Widget _buildDropdown() {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       child: Padding(
         padding: const EdgeInsets.all(20.0),
-        child: DropdownButtonFormField(
-          hint: const Text("Choose main location"),
-          value: location.type == 'I' ? 'Inside' : 'Outside',
-          onChanged: (String value) {
-            setState(() {
-              location.type = value == 'Inside' ? 'I' : 'O';
-            });
+        child: ReactiveDropdownField(
+          formControlName: 'main_location',
+          validationMessages: (control) => {
+            ValidationMessage.required: 'Choose main location',
           },
+          hint: const Text("Choose main location"),
           items: const <String>['Inside', 'Outside'].map((String value) {
             return DropdownMenuItem<String>(
               value: value,
@@ -45,20 +56,15 @@ class _EditLocationDialogState extends State<EditLocationDialog> {
       margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       child: Padding(
         padding: const EdgeInsets.all(20.0),
-        child: TextFormField(
+        child: ReactiveTextField<String>(
+          formControlName: 'location',
+          validationMessages: (control) => {
+            ValidationMessage.required: 'Please enter location name',
+          },
+          textInputAction: TextInputAction.done,
           decoration: const InputDecoration(
             labelText: 'Name',
           ),
-          initialValue: location.name,
-          validator: (value) {
-            if (value.isEmpty) {
-              return 'Please enter location name';
-            }
-            return null;
-          },
-          onChanged: (String value) {
-            location.name = value;
-          },
         ),
       ),
     );
@@ -76,8 +82,13 @@ class _EditLocationDialogState extends State<EditLocationDialog> {
         ),
         TextButton(
           onPressed: () {
-            if (_formKey.currentState.validate()) {
+            if (form.valid) {
+              location.type =
+                  form.control('main_location').value == 'Inside' ? 'I' : 'O';
+              location.name = form.control('location').value;
               Navigator.pop(context, location);
+            } else {
+              form.markAllAsTouched();
             }
           },
           child: const Text('Save'),
@@ -91,16 +102,15 @@ class _EditLocationDialogState extends State<EditLocationDialog> {
     return SimpleDialog(
       title: const Text('Edit location'),
       children: <Widget>[
-        Form(
-          key: _formKey,
+        ReactiveForm(
+          formGroup: form,
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              _buildDropdown(),
-              _buildNameField(),
-              _buildButtons(context),
-            ],
-          ),
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                _buildDropdown(),
+                _buildNameField(),
+                _buildButtons(context),
+              ]),
         ),
       ],
     );

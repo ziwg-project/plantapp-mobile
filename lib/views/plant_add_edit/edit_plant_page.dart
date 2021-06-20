@@ -6,6 +6,7 @@ import 'package:plants_app/models/suggestion_model.dart';
 import 'package:plants_app/views/locations_list/location_page.dart';
 import 'package:plants_app/views/plant_add_edit/photo_card.dart';
 import 'package:plants_app/views/plant_add_edit/suggestion_dialog.dart';
+import 'package:reactive_forms/reactive_forms.dart';
 import '../../utils.dart';
 
 class EditPlantPage extends StatefulWidget {
@@ -18,18 +19,18 @@ class EditPlantPage extends StatefulWidget {
 }
 
 class _EditPlantPageState extends State<EditPlantPage> {
-  final _formKey = GlobalKey<FormState>();
-  final nameController = TextEditingController();
-  final sciNameController = TextEditingController();
-  String locationText;
   final int plantId;
-  bool initialising = true;
   bool changingPhoto = false;
   Plant plant;
   Suggestion suggestion;
   Future<Plant> _futurePlant;
   Future<String> _futureText;
   _EditPlantPageState(this.plantId);
+  final form = FormGroup({
+    'name': FormControl<String>(value: '', validators: [Validators.required]),
+    'sci_name': FormControl<String>(value: ''),
+    'location_text': FormControl<String>(value: '', disabled: true),
+  });
 
   @override
   void initState() {
@@ -48,13 +49,6 @@ class _EditPlantPageState extends State<EditPlantPage> {
         .name;
   }
 
-  @override
-  void dispose() {
-    nameController.dispose();
-    sciNameController.dispose();
-    super.dispose();
-  }
-
   callback(String photoPath) async {
     plant.image = photoPath;
     changingPhoto = true;
@@ -64,20 +58,15 @@ class _EditPlantPageState extends State<EditPlantPage> {
     if (result != null) {
       suggestion = result;
       if (suggestion.plantName.isNotEmpty)
-        nameController.text = suggestion.plantName;
+        form.control('name').value = suggestion.plantName;
       if (suggestion.scientificName != null)
-        sciNameController.text = suggestion.scientificName;
+        form.control('sci_name').value = suggestion.scientificName;
     }
   }
 
   Widget _buildForm() {
-    if (initialising) {
-      nameController.text = plant.name;
-      sciNameController.text = plant.sciName == null ? '' : plant.sciName;
-      initialising = false;
-    }
-    return Form(
-      key: _formKey,
+    return ReactiveForm(
+      formGroup: form,
       child: ListView(
         children: <Widget>[
           PhotoCard(
@@ -90,7 +79,9 @@ class _EditPlantPageState extends State<EditPlantPage> {
             future: _futureText,
             builder: (context, snapshot) {
               if (snapshot.hasData) {
-                if (locationText == null) locationText = snapshot.data;
+                if (form.control('location_text').value == null ||
+                    form.control('location_text').value == '')
+                  form.control('location_text').value = snapshot.data;
                 return _buildLocationField();
               } else if (snapshot.hasError) {
                 return Center(child: Text("${snapshot.error}"));
@@ -108,19 +99,16 @@ class _EditPlantPageState extends State<EditPlantPage> {
       margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       child: Padding(
         padding: const EdgeInsets.all(20.0),
-        child: TextFormField(
+        child: ReactiveTextField<String>(
+          formControlName: 'name',
+          validationMessages: (control) => {
+            ValidationMessage.required: 'Please enter plant name',
+          },
+          textInputAction: TextInputAction.next,
           decoration: const InputDecoration(
             icon: Icon(Icons.eco),
             labelText: 'Name',
           ),
-          controller: nameController,
-          validator: (value) {
-            if (value.isEmpty) {
-              return 'Please enter plant name';
-            }
-            plant.name = value;
-            return null;
-          },
         ),
       ),
     );
@@ -131,16 +119,13 @@ class _EditPlantPageState extends State<EditPlantPage> {
       margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       child: Padding(
         padding: const EdgeInsets.all(20.0),
-        child: TextFormField(
+        child: ReactiveTextField<String>(
+          formControlName: 'sci_name',
+          textInputAction: TextInputAction.done,
           decoration: const InputDecoration(
             icon: Icon(Icons.eco_outlined),
             labelText: 'Scientific name',
           ),
-          controller: sciNameController,
-          validator: (value) {
-            plant.sciName = value;
-            return null;
-          },
         ),
       ),
     );
@@ -155,13 +140,16 @@ class _EditPlantPageState extends State<EditPlantPage> {
         margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         child: Padding(
           padding: const EdgeInsets.all(20.0),
-          child: TextFormField(
+          child: ReactiveTextField<String>(
+            formControlName: 'location_text',
+            validationMessages: (control) => {
+              ValidationMessage.required: 'Please choose a location',
+            },
             decoration: InputDecoration(
               icon: const Icon(Icons.location_on),
-              labelText: locationText,
+              labelText: form.control('location_text').value,
               labelStyle: const TextStyle(color: Colors.black),
             ),
-            enabled: false,
           ),
         ),
       ),
@@ -176,15 +164,15 @@ class _EditPlantPageState extends State<EditPlantPage> {
                   fromList: false,
                 )));
     if (result != null) {
-      setState(() {
-        locationText = result[0];
-        plant.locFk = result[1];
-      });
+      form.control('location_text').value = result[0];
+      plant.locFk = result[1];
     }
   }
 
   Future<void> sendData() async {
     String token = await getToken();
+    plant.name = form.control('name').value;
+    plant.sciName = form.control('sci_name').value;
     await updatePlant(token, plant, changingPhoto);
     if (suggestion != null) {
       Note note = new Note();
@@ -221,9 +209,11 @@ class _EditPlantPageState extends State<EditPlantPage> {
               size: 30.0,
             ),
             onPressed: () async {
-              if (_formKey.currentState.validate()) {
+              if (form.valid) {
                 await sendData();
                 Navigator.pop(context);
+              } else {
+                form.markAllAsTouched();
               }
             },
           ),
@@ -234,6 +224,9 @@ class _EditPlantPageState extends State<EditPlantPage> {
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             plant = snapshot.data;
+            form.control('name').value = plant.name;
+            form.control('sci_name').value =
+                plant.sciName == null ? '' : plant.sciName;
             return _buildForm();
           } else if (snapshot.hasError) {
             return Center(child: Text("${snapshot.error}"));
