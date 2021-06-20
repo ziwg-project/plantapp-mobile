@@ -75,28 +75,14 @@ class _PlantsListPageState extends State<PlantsListPage> {
     return [inside, outside];
   }
 
-  @override
-  void didUpdateWidget(PlantsListPage oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    setState(() {
-      getToken().then((value) => {
-            fetchAllPlants(value, query: '').then((response) {
-              plants = response;
-            })
-          });
-      searchForm.control('name').value = '';
-      _futureWidgets = _buildWidgets();
-    });
-  }
-
   callback() {
     setState(() {
-      searchForm.control('name').value = '';
       getToken().then((value) => {
             fetchAllPlants(value, query: '').then((response) {
               plants = response;
             })
           });
+      searchForm.control('name').value = '';
       _futureWidgets = _buildWidgets();
     });
   }

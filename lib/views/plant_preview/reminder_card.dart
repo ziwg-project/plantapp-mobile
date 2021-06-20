@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:plants_app/models/reminder_log_model.dart';
 import 'package:plants_app/models/reminder_model.dart';
 import 'package:plants_app/views/delete_dialog.dart';
 import 'package:plants_app/views/plant_add_edit/edit_reminder_page.dart';
+import 'package:plants_app/views/plant_preview/log_dialog.dart';
+import 'package:plants_app/views/plant_preview/reminder_change_dialog.dart';
 import '../../utils.dart';
 
 class ReminderCard extends StatefulWidget {
@@ -95,6 +98,18 @@ class _ReminderCardState extends State<ReminderCard> {
           value: 0,
           child: Row(
             children: <Widget>[
+              Icon(Icons.check_circle_outlined),
+              const SizedBox(
+                width: 5,
+              ),
+              const Text('Done'),
+            ],
+          ),
+        ),
+        PopupMenuItem(
+          value: 1,
+          child: Row(
+            children: <Widget>[
               Icon(Icons.edit),
               const SizedBox(
                 width: 5,
@@ -104,7 +119,7 @@ class _ReminderCardState extends State<ReminderCard> {
           ),
         ),
         PopupMenuItem(
-          value: 1,
+          value: 2,
           child: Row(
             children: <Widget>[
               Icon(Icons.delete),
@@ -119,7 +134,11 @@ class _ReminderCardState extends State<ReminderCard> {
     ).then(
       (value) {
         if (value != null) {
-          value == 0 ? _editReminder(context) : _askedToDelete(context);
+          value == 0
+              ? _logAction(context)
+              : value == 1
+                  ? _editReminder(context)
+                  : _askedToDelete(context);
         }
       },
     );
@@ -143,6 +162,23 @@ class _ReminderCardState extends State<ReminderCard> {
       ),
     );
     widget.notifyParent();
+  }
+
+  void _logAction(BuildContext context) async {
+    final result =
+        await showDialog(context: context, builder: (context) => LogDialog());
+    if (result != null && result) {
+      String token = await getToken();
+      ReminderLog reminderLog = new ReminderLog(
+          logType: 'D', logTmstp: DateTime.now(), reminderFk: reminder.id);
+      await createLog(token, reminderLog);
+      final changeResult = await showDialog(
+          context: context, builder: (context) => ReminderChangeDialog());
+      if (changeResult != null && changeResult) {
+        reminder.baseTmstp = DateTime.now();
+        await updateReminder(token, reminder);
+      }
+    }
   }
 
   @override

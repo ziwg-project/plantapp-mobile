@@ -22,14 +22,7 @@ class PlantPage extends StatefulWidget {
 
 class _PlantPageState extends State<PlantPage> {
   final int plantId;
-  Future<Widget> _futureWidget;
   _PlantPageState(this.plantId);
-
-  @override
-  void initState() {
-    super.initState();
-    _futureWidget = _buildWidgets();
-  }
 
   void _askedToDelete(BuildContext context) async {
     final result = await showDialog(
@@ -41,15 +34,6 @@ class _PlantPageState extends State<PlantPage> {
         Navigator.pop(context, true);
       });
     }
-  }
-
-  Future<Widget> _buildWidgets() async {
-    return ListView(
-      children: <Widget>[
-        PlantInfoCard(plantId: plantId, key: UniqueKey()),
-        ChoiceCard(plantId: plantId, key: UniqueKey()),
-      ],
-    );
   }
 
   @override
@@ -72,7 +56,7 @@ class _PlantPageState extends State<PlantPage> {
                 ),
               ).then((value) {
                 setState(() {
-                  _futureWidget = _buildWidgets();
+                  widget.notifyParent();
                 });
               });
             },
@@ -107,9 +91,7 @@ class _PlantPageState extends State<PlantPage> {
                   ),
                 ),
               ).then((value) {
-                setState(() {
-                  _futureWidget = _buildWidgets();
-                });
+                setState(() {});
               });
             },
           ),
@@ -126,25 +108,18 @@ class _PlantPageState extends State<PlantPage> {
                   ),
                 ),
               ).then((value) {
-                setState(() {
-                  _futureWidget = _buildWidgets();
-                });
+                setState(() {});
               });
             },
           ),
         ],
       ),
       body: Container(
-        child: FutureBuilder<Widget>(
-          future: _futureWidget,
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              return snapshot.data;
-            } else if (snapshot.hasError) {
-              return Center(child: Text("${snapshot.error}"));
-            }
-            return Center(child: CircularProgressIndicator());
-          },
+        child: ListView(
+          children: <Widget>[
+            PlantInfoCard(plantId: plantId, key: UniqueKey()),
+            ChoiceCard(plantId: plantId, key: UniqueKey()),
+          ],
         ),
       ),
     );
